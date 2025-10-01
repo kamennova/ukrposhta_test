@@ -35,8 +35,8 @@ class _VState extends State<_View> with SingleTickerProviderStateMixin {
 
   void _toggleTrafficLight() {
     final cubit = context.read<TrafficLightCubit>();
-    if (!cubit.state.isOn) {
-      cubit.runRegular();
+    if (cubit.state is StoppedTrafficLightState) {
+      cubit.resume();
     } else {
       cubit.stop();
     }
@@ -109,7 +109,6 @@ class _VState extends State<_View> with SingleTickerProviderStateMixin {
                                   ]
                                   .map(
                                     (color) => TrafficLightCircle(
-                                      // key: Key("light_widget-${color.name}"),
                                       animation: _animation,
                                       color: color,
                                       isActive: state.currentColor == color,

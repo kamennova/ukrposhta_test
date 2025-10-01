@@ -16,23 +16,13 @@ abstract class TrafficLightState with _$TrafficLightState {
   const factory TrafficLightState.blinkingYellow() =
       BlinkingYellowTrafficLightState;
 
-  const factory TrafficLightState.blinkingGreen() =
-      BlinkingGreenTrafficLightState;
-
   LightColor? get currentColor => when(
     stopped: () => null,
     regular: (currentColor) => currentColor,
-    blinkingGreen: () => LightColor.green,
     blinkingYellow: () => LightColor.yellow,
   );
 
   bool get isOn => this is! StoppedTrafficLightState;
 
-  bool get isBlinking =>
-      whenOrNull(blinkingYellow: () => true, blinkingGreen: () => true) ??
-      false;
-
-  bool get isRegular =>
-      this is RegularTrafficLightState ||
-      this is BlinkingGreenTrafficLightState;
+  bool get isBlinking => this is BlinkingYellowTrafficLightState;
 }

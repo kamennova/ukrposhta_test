@@ -11,20 +11,19 @@ import '../../common.dart';
 class TrafficLightCubit extends Cubit<TrafficLightState> {
   TrafficLightCubit() : super(TrafficLightState.regular(_defaultColor));
 
-  int _currColorIndex = _defaultIndex;
+  int _currColorIndex = _defaultColorIndex;
   Map<LightColor, Duration> _lightsDurations = defaultLightsDurations;
 
-  Timer? _scheduledBlink;
   Timer? _nextColorTimer;
   Timer? _modeRequester;
 
-  static const int _defaultIndex = 0;
+  static const int _defaultColorIndex = 0;
 
-  static LightColor get _defaultColor => _colorsCycle[_defaultIndex];
+  static LightColor get _defaultColor => _colorsCycle[_defaultColorIndex];
 
   static const Map<LightColor, Duration> defaultLightsDurations = {
-    LightColor.yellow: Duration(seconds: 1),
     LightColor.red: Duration(seconds: 3),
+    LightColor.yellow: Duration(seconds: 1),
     LightColor.green: Duration(seconds: 3),
   };
 
@@ -35,34 +34,39 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
     LightColor.yellow,
   ];
 
-  static const _greenBlinkDurationMs = 700;
-
   Duration get _currDuration =>
       _lightsDurations[_colorsCycle[_currColorIndex]]!;
 
   void start() {
-    _scheduleNextColor(_currDuration);
+    _scheduleNextColor();
     _fetchLightsDurations();
-    _initModeMonitoring();
+    _fetchLightMode();
   }
 
-  void runRegular() {
-    if (state.isRegular) return;
+  void resume() {
+    _runRegular();
+  }
+
+  void _runRegular() {
+    if (state is RegularTrafficLightState) return;
 
     if (!state.isOn) {
-      _initModeMonitoring();
+      _fetchLightMode();
     }
 
+    _currColorIndex = _defaultColorIndex;
     emit(TrafficLightState.regular(_colorsCycle[_currColorIndex]));
 
-    _nextColor();
+    /* not calling _nextColor() here, because it'd change curr color (red)
+     immediately */
+    _scheduleNextColor();
   }
 
   void stop() {
     if (state is StoppedTrafficLightState) return;
 
+    _cancelLightCycleTimer();
     emit(TrafficLightState.stopped());
-    _finishRegularMode();
     _cancelModeMonitoring();
   }
 
@@ -70,59 +74,35 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
     if (state is BlinkingYellowTrafficLightState) return;
 
     if (!state.isOn) {
-      _initModeMonitoring();
+      _fetchLightMode();
     }
 
     emit(TrafficLightState.blinkingYellow());
-    _finishRegularMode();
+    _cancelLightCycleTimer();
   }
 
   void _nextColor() {
-    if (!state.isRegular) return;
+    if (state is! RegularTrafficLightState) return;
 
     _currColorIndex = (_currColorIndex + 1) % 4;
     final nextColor = _colorsCycle[_currColorIndex];
-    final nextDuration = _lightsDurations[nextColor]!;
-
-    if (nextColor == LightColor.green) {
-      _scheduleBlinkingGreen(
-        Duration(
-          milliseconds: nextDuration.inMilliseconds - _greenBlinkDurationMs,
-        ),
-      );
-    }
 
     emit(TrafficLightState.regular(nextColor));
 
-    _scheduleNextColor(nextDuration);
+    _scheduleNextColor();
   }
 
-  void _scheduleNextColor(Duration delay) {
+  void _scheduleNextColor() {
+    final delay = _currDuration;
     _nextColorTimer = Timer(delay, _nextColor);
   }
 
-  void _finishRegularMode() {
-    _currColorIndex = _defaultIndex;
-    _cancelLightTimers();
-  }
-
-  void _cancelLightTimers() {
-    _scheduledBlink?.cancel();
-    _scheduledBlink = null;
-
+  void _cancelLightCycleTimer() {
     _nextColorTimer?.cancel();
     _nextColorTimer = null;
   }
 
-  void _scheduleBlinkingGreen(Duration delay) async {
-    _scheduledBlink = Timer(delay, () {
-      if (state.isRegular) {
-        emit(TrafficLightState.blinkingGreen());
-      }
-    });
-  }
-
-  Future<void> _initModeMonitoring() async {
+  Future<void> _fetchLightMode() async {
     final useCase = getIt<GetTrafficLightModeUseCase>();
 
     _modeRequester = Timer.periodic(Duration(seconds: 2), (_) async {
@@ -130,10 +110,12 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
 
       final mode = await useCase.getTrafficLightMode();
 
-      if (mode == TrafficLightMode.blinkingYellow) {
+      if (mode == TrafficLightMode.blinkingYellow &&
+          state is! BlinkingYellowTrafficLightState) {
         runBlinkingYellow();
-      } else if (mode == TrafficLightMode.regular) {
-        runRegular();
+      } else if (mode == TrafficLightMode.regular &&
+          state is! RegularTrafficLightState) {
+        _runRegular();
       }
     });
   }
@@ -160,7 +142,7 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
 
   @override
   Future<void> close() async {
-    _cancelLightTimers();
+    _cancelLightCycleTimer();
     _cancelModeMonitoring();
 
     super.close();
