@@ -5,6 +5,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ukrposhtatest/domain/entities/light_color.dart';
 import 'package:ukrposhtatest/presentation/cubit/traffic_light_cubit.dart';
 import 'package:ukrposhtatest/presentation/cubit/traffic_light_state.dart';
+import 'package:ukrposhtatest/presentation/view/start_stop_button.dart';
+
+import 'light_widget.dart';
+import 'mode_switcher.dart';
 
 class TrafficLightPage extends StatefulWidget {
   const TrafficLightPage({super.key});
@@ -14,13 +18,6 @@ class TrafficLightPage extends StatefulWidget {
 }
 
 class _TrafficLightState extends State<TrafficLightPage> {
-  final _lightCubit = TrafficLightCubit();
-
-  @override
-  void dispose() {
-    _lightCubit.close();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -117,7 +114,7 @@ class _VState extends State<_View> with SingleTickerProviderStateMixin {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            _Light(
+                            TrafficLightCircle(
                               animation: _animation,
                               color: LightColor.red,
                               isActive:
@@ -125,7 +122,7 @@ class _VState extends State<_View> with SingleTickerProviderStateMixin {
                                   state.currentColor == LightColor.red,
                             ),
                             SizedBox(height: 6),
-                            _Light(
+                            TrafficLightCircle(
                               animation: _animation,
                               color: LightColor.yellow,
                               isActive:
@@ -133,7 +130,7 @@ class _VState extends State<_View> with SingleTickerProviderStateMixin {
                                   state.currentColor == LightColor.yellow,
                             ),
                             SizedBox(height: 6),
-                            _Light(
+                            TrafficLightCircle(
                               animation: _animation,
                               color: LightColor.green,
                               isActive:
@@ -146,12 +143,12 @@ class _VState extends State<_View> with SingleTickerProviderStateMixin {
                     ),
                   ),
                   SizedBox(height: 20),
-                  _ModeSwitcher(),
+                  const ModeSwitcher(),
                   SizedBox(height: 10),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      _MyButton(
+                      BigButton(
                         onPressed: _toggleTrafficLight,
                         icon:
                             state.isOn
@@ -170,125 +167,3 @@ class _VState extends State<_View> with SingleTickerProviderStateMixin {
     );
   }
 }
-
-class _ModeSwitcher extends StatelessWidget {
-  Widget _getLabel(TrafficLightMode mode, String label, BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        final cubit = context.read<TrafficLightCubit>();
-        if (cubit.state.mode == mode) return;
-        cubit.setMode(mode);
-      },
-      child: Text(label, style: TextStyle(fontSize: 17)),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<TrafficLightCubit, TrafficLightState>(
-      builder: (context, state) {
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _getLabel(TrafficLightMode.regular, "Regular", context),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              child: Switch(
-                value: state.mode == TrafficLightMode.blinkingYellow,
-                onChanged:
-                    (value) => context.read<TrafficLightCubit>().setMode(
-                      value
-                          ? TrafficLightMode.blinkingYellow
-                          : TrafficLightMode.regular,
-                    ),
-              ),
-            ),
-            _getLabel(
-              TrafficLightMode.blinkingYellow,
-              "Blinking yellow",
-              context,
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-class _MyButton extends StatelessWidget {
-  final Widget icon;
-  final String label;
-  final Function() onPressed;
-
-  const _MyButton({
-    super.key,
-    required this.onPressed,
-    required this.icon,
-    required this.label,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          elevation: 6,
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          padding: EdgeInsets.fromLTRB(10, 20, 10, 20),
-        ),
-        onPressed: onPressed,
-        child: Column(
-          children: [
-            icon,
-            SizedBox(height: 5),
-            Text(label, style: TextStyle(fontSize: 20)),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _Light extends StatelessWidget {
-  final LightColor color;
-  final bool isActive;
-  final Animation<double> animation;
-
-  const _Light({
-    super.key,
-    required this.animation,
-    required this.isActive,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 104,
-      height: 104,
-      decoration: BoxDecoration(color: Colors.grey, shape: BoxShape.circle),
-      child: Center(
-        child: FadeTransition(
-          opacity: animation,
-          child: Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              color: isActive ? _colors[color] : null,
-              shape: BoxShape.circle,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-const Map<LightColor, Color> _colors = {
-  LightColor.red: Colors.red,
-  LightColor.yellow: Colors.yellow,
-  LightColor.green: Colors.green,
-};
