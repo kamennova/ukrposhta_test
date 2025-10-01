@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ukrposhtatest/domain/get_mode_use_case.dart';
 
+import '../../../common.dart';
 import '../../../domain/entities/light_color.dart';
 import '../../cubit/traffic_light_cubit.dart';
 import '../../cubit/traffic_light_state.dart';
@@ -19,6 +21,9 @@ class ModeSwitcher extends StatelessWidget {
   }
 
   void _setMode(TrafficLightMode mode, BuildContext context) {
+    getIt<GetTrafficLightModeUseCase>().setTrafficLightMode(mode);
+
+    /*
     final cubit = context.read<TrafficLightCubit>();
 
     if (!cubit.state.isOn) return;
@@ -27,7 +32,7 @@ class ModeSwitcher extends StatelessWidget {
       cubit.runRegular();
     } else {
       cubit.runBlinkingYellow();
-    }
+    } */
   }
 
   @override
