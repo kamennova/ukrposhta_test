@@ -17,7 +17,6 @@ class ModeSwitcher extends StatelessWidget {
 
   void _setMode(TrafficLightMode mode, BuildContext context) {
     final cubit = context.read<TrafficLightCubit>();
-    if (cubit.state.mode == mode) return;
 
     if (mode == TrafficLightMode.regular) {
       cubit.runRegular();
@@ -40,7 +39,7 @@ class ModeSwitcher extends StatelessWidget {
                 trackColor: WidgetStatePropertyAll(Colors.grey.shade600),
                 activeColor: Colors.yellow,
                 inactiveThumbColor: Colors.white,
-                value: state.mode == TrafficLightMode.blinkingYellow,
+                value: state is BlinkingYellowTrafficLightState,
                 onChanged:
                     (value) => _setMode(
                       value

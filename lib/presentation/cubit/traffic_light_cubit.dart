@@ -8,7 +8,7 @@ import 'package:ukrposhtatest/presentation/cubit/traffic_light_state.dart';
 import '../../common.dart';
 
 class TrafficLightCubit extends Cubit<TrafficLightState> {
-  TrafficLightCubit() : super(const TrafficLightState());
+  TrafficLightCubit() : super(const TrafficLightState.regular(LightColor.red));
 
   int _currColorIndex = 0;
   Map<LightColor, Duration> _lightsDurations = defaultLightsDurations;
@@ -26,28 +26,31 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
     LightColor.yellow,
   ];
 
-  bool get isStopped => state.mode == TrafficLightMode.stopped;
+  static const _greenBlinkDurationMs = 500;
 
+  bool get isStopped => state is StoppedTrafficLightState;
 
-  void runRegular() async {
-    if (state.mode == TrafficLightMode.regular) return;
+  void start() => runRegular();
+
+  void runRegular() {
+    if (state is RegularTrafficLightState) return;
 
     final needRestart = isStopped;
 
-    emit(TrafficLightState.regular());
+    emit(TrafficLightState.regular(LightColor.red));
 
     if (needRestart) {
       _nextColor();
     }
   }
 
-  void stop() async {
-    if (state.mode == TrafficLightMode.stopped) return;
+  void stop() {
+    if (state is StoppedTrafficLightState) return;
     emit(TrafficLightState.stopped());
   }
 
   void runBlinkingYellow() {
-    if (state.mode == TrafficLightMode.blinkingYellow) return;
+    if (state is BlinkingYellowTrafficLightState) return;
 
     final needRestart = isStopped;
 
@@ -58,27 +61,29 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
     }
   }
 
-  void _nextColor() async {
+  void _nextColor() {
     if (isStopped) return;
 
     _currColorIndex = (_currColorIndex + 1) % 4;
     final nextColor = _colorsCycle[_currColorIndex];
-    // if (nextColor == LightColor.green) {
-    //   _scheduleBlinking(
-    //     Duration(seconds: _lightsDurations[LightColor.green]! - 1),
-    //   );
-    // }
 
-    emit(state.copyWith(currentColor: nextColor));
+    if (nextColor == LightColor.green) {
+      final greenDuration = _lightsDurations[LightColor.green]!;
+      _scheduleBlinking(
+        Duration(
+          milliseconds: greenDuration.inMilliseconds - _greenBlinkDurationMs,
+        ),
+      );
+    }
 
-    Future.delayed(
-      _lightsDurations[nextColor]!,
-    ).then((_) => _nextColor());
+    emit(TrafficLightState.regular(nextColor));
+
+    Future.delayed(_lightsDurations[nextColor]!).then((_) => _nextColor());
   }
 
   void _scheduleBlinking(Duration delay) async {
     await Future.delayed(delay);
-    // emit(state.copyWith(isBlinking: true));
+    emit(TrafficLightState.regular(LightColor.green, isGreenBlinking: true));
   }
 
   Future<void> fetchLightsDurations() async {

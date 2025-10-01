@@ -1,4 +1,5 @@
 import '../../domain/entities/light_color.dart';
+import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'traffic_light_state.freezed.dart';
@@ -7,23 +8,22 @@ part 'traffic_light_state.freezed.dart';
 abstract class TrafficLightState with _$TrafficLightState {
   const TrafficLightState._();
 
-  const factory TrafficLightState({
-    @Default(null) LightColor? currentColor,
-    @Default(TrafficLightMode.regular) TrafficLightMode mode,
-  }) = _TrafficLightState;
+  factory TrafficLightState.stopped() = StoppedTrafficLightState;
 
-  factory TrafficLightState.stopped() =>
-      TrafficLightState(currentColor: null, mode: TrafficLightMode.stopped);
+  const factory TrafficLightState.regular(
+    LightColor currentColor, {
+    @Default(false) bool isGreenBlinking,
+  }) = RegularTrafficLightState;
 
-  factory TrafficLightState.regular() => TrafficLightState(
-    currentColor: LightColor.red,
-    mode: TrafficLightMode.regular,
+  factory TrafficLightState.blinkingYellow() = BlinkingYellowTrafficLightState;
+
+  LightColor? get currentColor => when(
+    stopped: () => null,
+    regular: (currentColor, isGreenBlinking) => currentColor,
+    blinkingYellow: () => LightColor.yellow,
   );
 
-  factory TrafficLightState.blinkingYellow() => TrafficLightState(
-    currentColor: LightColor.yellow,
-    mode: TrafficLightMode.blinkingYellow,
-  );
+  bool get isOn => this is! StoppedTrafficLightState;
 
-  bool get isOn => mode != TrafficLightMode.stopped;
+  bool get isBlinking => whenOrNull(blinkingYellow: () => true, regular: (currentColor, isGreenBlinking) => isGreenBlinking) ?? false;
 }

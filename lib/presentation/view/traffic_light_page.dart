@@ -18,7 +18,6 @@ class TrafficLightPage extends StatefulWidget {
 }
 
 class _TrafficLightState extends State<TrafficLightPage> {
-
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -59,10 +58,7 @@ class _VState extends State<_View> with SingleTickerProviderStateMixin {
       vsync: this,
       duration: const Duration(milliseconds: 200),
     );
-    _animation = Tween<double>(
-      begin: 0,
-      end: 1,
-    ).animate(_animationController);
+    _animation = Tween<double>(begin: 0, end: 1).animate(_animationController);
 
     _animationController.repeat(reverse: true);
   }
@@ -79,8 +75,7 @@ class _VState extends State<_View> with SingleTickerProviderStateMixin {
       listener: (context, state) {
         log(state.toString());
 
-        bool shouldBlink =
-             state.mode == TrafficLightMode.blinkingYellow;
+        bool shouldBlink = state.isBlinking;
 
         if (state.isOn && shouldBlink) {
           if (!_animationController.isAnimating) {
@@ -101,8 +96,6 @@ class _VState extends State<_View> with SingleTickerProviderStateMixin {
         ),
         body: BlocBuilder<TrafficLightCubit, TrafficLightState>(
           builder: (context, state) {
-            final isYellow = state.mode == TrafficLightMode.blinkingYellow;
-
             return Padding(
               padding: EdgeInsets.all(10),
               child: Column(
@@ -124,25 +117,19 @@ class _VState extends State<_View> with SingleTickerProviderStateMixin {
                             TrafficLightCircle(
                               animation: _animation,
                               color: LightColor.red,
-                              isActive:
-                                  !isYellow &&
-                                  state.currentColor == LightColor.red,
+                              isActive: state.currentColor == LightColor.red,
                             ),
                             SizedBox(height: 6),
                             TrafficLightCircle(
                               animation: _animation,
                               color: LightColor.yellow,
-                              isActive:
-                                  isYellow ||
-                                  state.currentColor == LightColor.yellow,
+                              isActive: state.currentColor == LightColor.yellow,
                             ),
                             SizedBox(height: 6),
                             TrafficLightCircle(
                               animation: _animation,
                               color: LightColor.green,
-                              isActive:
-                                  !isYellow &&
-                                  state.currentColor == LightColor.green,
+                              isActive: state.currentColor == LightColor.green,
                             ),
                           ],
                         ),
