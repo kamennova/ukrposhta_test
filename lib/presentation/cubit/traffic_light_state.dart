@@ -8,22 +8,31 @@ part 'traffic_light_state.freezed.dart';
 abstract class TrafficLightState with _$TrafficLightState {
   const TrafficLightState._();
 
-  factory TrafficLightState.stopped() = StoppedTrafficLightState;
+  const factory TrafficLightState.stopped() = StoppedTrafficLightState;
 
-  const factory TrafficLightState.regular(
-    LightColor currentColor, {
-    @Default(false) bool isGreenBlinking,
-  }) = RegularTrafficLightState;
+  const factory TrafficLightState.regular(LightColor currentColor) =
+      RegularTrafficLightState;
 
-  factory TrafficLightState.blinkingYellow() = BlinkingYellowTrafficLightState;
+  const factory TrafficLightState.blinkingYellow() =
+      BlinkingYellowTrafficLightState;
+
+  const factory TrafficLightState.blinkingGreen() =
+      BlinkingGreenTrafficLightState;
 
   LightColor? get currentColor => when(
     stopped: () => null,
-    regular: (currentColor, isGreenBlinking) => currentColor,
+    regular: (currentColor) => currentColor,
+    blinkingGreen: () => LightColor.green,
     blinkingYellow: () => LightColor.yellow,
   );
 
   bool get isOn => this is! StoppedTrafficLightState;
 
-  bool get isBlinking => whenOrNull(blinkingYellow: () => true, regular: (currentColor, isGreenBlinking) => isGreenBlinking) ?? false;
+  bool get isBlinking =>
+      whenOrNull(blinkingYellow: () => true, blinkingGreen: () => true) ??
+      false;
+
+  bool get isRegular =>
+      this is RegularTrafficLightState ||
+      this is BlinkingGreenTrafficLightState;
 }

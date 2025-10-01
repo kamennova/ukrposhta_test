@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ukrposhtatest/domain/entities/light_color.dart';
@@ -23,8 +21,7 @@ class _TrafficLightState extends State<TrafficLightPage> {
     return BlocProvider(
       create: (_) {
         final cubit = TrafficLightCubit();
-        cubit.fetchLightsDurations();
-        cubit.runRegular();
+        cubit.start();
         return cubit;
       },
       child: _View(),
@@ -56,11 +53,10 @@ class _VState extends State<_View> with SingleTickerProviderStateMixin {
 
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 150),
     );
     _animation = Tween<double>(begin: 0, end: 1).animate(_animationController);
-
-    _animationController.repeat(reverse: true);
+    _animationController.value = 1;
   }
 
   @override
@@ -73,15 +69,11 @@ class _VState extends State<_View> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) {
     return BlocListener<TrafficLightCubit, TrafficLightState>(
       listener: (context, state) {
-        log(state.toString());
-
-        bool shouldBlink = state.isBlinking;
-
-        if (state.isOn && shouldBlink) {
+        if (state.isBlinking) {
           if (!_animationController.isAnimating) {
-            _animationController.repeat();
+            _animationController.repeat(reverse: true);
           }
-        } else if (!shouldBlink) {
+        } else {
           if (_animationController.isAnimating) {
             _animationController.stop();
             _animationController.value = 1;
@@ -112,33 +104,29 @@ class _VState extends State<_View> with SingleTickerProviderStateMixin {
                           borderRadius: BorderRadius.circular(15),
                         ),
                         child: Column(
+                          spacing: 6,
                           mainAxisSize: MainAxisSize.min,
-                          children: [
-                            TrafficLightCircle(
-                              animation: _animation,
-                              color: LightColor.red,
-                              isActive: state.currentColor == LightColor.red,
-                            ),
-                            SizedBox(height: 6),
-                            TrafficLightCircle(
-                              animation: _animation,
-                              color: LightColor.yellow,
-                              isActive: state.currentColor == LightColor.yellow,
-                            ),
-                            SizedBox(height: 6),
-                            TrafficLightCircle(
-                              animation: _animation,
-                              color: LightColor.green,
-                              isActive: state.currentColor == LightColor.green,
-                            ),
-                          ],
+                          children:
+                              [
+                                    LightColor.red,
+                                    LightColor.yellow,
+                                    LightColor.green,
+                                  ]
+                                  .map(
+                                    (color) => TrafficLightCircle(
+                                      animation: _animation,
+                                      color: color,
+                                      isActive: state.currentColor == color,
+                                    ),
+                                  )
+                                  .toList(),
                         ),
                       ),
                     ),
                   ),
                   SizedBox(height: 20),
-                  state.isOn ? const ModeSwitcher() : const SizedBox.shrink(),
-                  SizedBox(height: 10),
+                  const ModeSwitcher(),
+                  SizedBox(height: 20),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [

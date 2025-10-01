@@ -11,12 +11,17 @@ class ModeSwitcher extends StatelessWidget {
   Widget _getLabel(TrafficLightMode mode, String label, BuildContext context) {
     return GestureDetector(
       onTap: () => _setMode(mode, context),
-      child: Text(label, style: TextStyle(fontSize: 17)),
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+        child: Text(label, style: TextStyle(fontSize: 17)),
+      ),
     );
   }
 
   void _setMode(TrafficLightMode mode, BuildContext context) {
     final cubit = context.read<TrafficLightCubit>();
+
+    if (!cubit.state.isOn) return;
 
     if (mode == TrafficLightMode.regular) {
       cubit.runRegular();
@@ -29,32 +34,36 @@ class ModeSwitcher extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<TrafficLightCubit, TrafficLightState>(
       builder: (context, state) {
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _getLabel(TrafficLightMode.regular, "Regular", context),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              child: Switch(
+        final bool isEnabled = state.isOn;
+
+        return Opacity(
+          opacity: isEnabled ? 1 : 0.5,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _getLabel(TrafficLightMode.regular, "Regular", context),
+              Switch(
                 trackColor: WidgetStatePropertyAll(Colors.grey.shade600),
                 activeColor: Colors.yellow,
                 inactiveThumbColor: Colors.white,
                 value: state is BlinkingYellowTrafficLightState,
                 onChanged:
-                    (value) => _setMode(
-                      value
-                          ? TrafficLightMode.blinkingYellow
-                          : TrafficLightMode.regular,
-                      context
-                    ),
+                    isEnabled
+                        ? (value) => _setMode(
+                          value
+                              ? TrafficLightMode.blinkingYellow
+                              : TrafficLightMode.regular,
+                          context,
+                        )
+                        : null,
               ),
-            ),
-            _getLabel(
-              TrafficLightMode.blinkingYellow,
-              "Blinking yellow",
-              context,
-            ),
-          ],
+              _getLabel(
+                TrafficLightMode.blinkingYellow,
+                "Blinking yellow",
+                context,
+              ),
+            ],
+          ),
         );
       },
     );

@@ -8,10 +8,16 @@ import 'package:ukrposhtatest/presentation/cubit/traffic_light_state.dart';
 import '../../common.dart';
 
 class TrafficLightCubit extends Cubit<TrafficLightState> {
-  TrafficLightCubit() : super(const TrafficLightState.regular(LightColor.red));
+  TrafficLightCubit() : super(const TrafficLightState.regular(_defaultColor));
 
-  int _currColorIndex = 0;
+  int _currColorIndex = _defaultIndex;
   Map<LightColor, Duration> _lightsDurations = defaultLightsDurations;
+
+  Timer? _scheduledBlink;
+  Timer? _nextColorTimer;
+
+  static const LightColor _defaultColor = LightColor.red;
+  static const int _defaultIndex = 0;
 
   static const Map<LightColor, Duration> defaultLightsDurations = {
     LightColor.yellow: Duration(seconds: 1),
@@ -26,64 +32,69 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
     LightColor.yellow,
   ];
 
-  static const _greenBlinkDurationMs = 500;
+  static const _greenBlinkDurationMs = 700;
 
-  bool get isStopped => state is StoppedTrafficLightState;
-
-  void start() => runRegular();
+  void start() {
+    _nextColor();
+    fetchLightsDurations();
+  }
 
   void runRegular() {
-    if (state is RegularTrafficLightState) return;
+    if (state.isRegular) return;
 
-    final needRestart = isStopped;
+    emit(TrafficLightState.regular(_colorsCycle[_currColorIndex]));
 
-    emit(TrafficLightState.regular(LightColor.red));
-
-    if (needRestart) {
-      _nextColor();
-    }
+    _nextColor();
   }
 
   void stop() {
     if (state is StoppedTrafficLightState) return;
     emit(TrafficLightState.stopped());
+    _finishRegularMode();
   }
 
   void runBlinkingYellow() {
     if (state is BlinkingYellowTrafficLightState) return;
-
-    final needRestart = isStopped;
-
     emit(TrafficLightState.blinkingYellow());
-
-    if (needRestart) {
-      _nextColor();
-    }
+    _finishRegularMode();
   }
 
   void _nextColor() {
-    if (isStopped) return;
+    if (!state.isRegular) return;
 
     _currColorIndex = (_currColorIndex + 1) % 4;
     final nextColor = _colorsCycle[_currColorIndex];
+    final nextDuration = _lightsDurations[nextColor]!;
 
     if (nextColor == LightColor.green) {
-      final greenDuration = _lightsDurations[LightColor.green]!;
       _scheduleBlinking(
         Duration(
-          milliseconds: greenDuration.inMilliseconds - _greenBlinkDurationMs,
+          milliseconds: nextDuration.inMilliseconds - _greenBlinkDurationMs,
         ),
       );
     }
 
     emit(TrafficLightState.regular(nextColor));
 
-    Future.delayed(_lightsDurations[nextColor]!).then((_) => _nextColor());
+    _nextColorTimer = Timer(nextDuration, _nextColor);
+  }
+
+  void _finishRegularMode() {
+    _currColorIndex = _defaultIndex;
+
+    _scheduledBlink?.cancel();
+    _scheduledBlink = null;
+
+    _nextColorTimer?.cancel();
+    _nextColorTimer = null;
   }
 
   void _scheduleBlinking(Duration delay) async {
-    await Future.delayed(delay);
-    emit(TrafficLightState.regular(LightColor.green, isGreenBlinking: true));
+    _scheduledBlink = Timer(delay, () async {
+      if (state.isRegular) {
+        emit(TrafficLightState.blinkingGreen());
+      }
+    });
   }
 
   Future<void> fetchLightsDurations() async {
