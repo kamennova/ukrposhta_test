@@ -6,9 +6,8 @@ import 'entities/light_color.dart';
 class GetTrafficLightModeUseCase {
   const GetTrafficLightModeUseCase();
 
-  Future<TrafficLightMode> getTrafficLightMode() async {
-    return await getIt<TrafficLightRepository>().getTrafficLightMode();
-  }
+  Stream<TrafficLightMode> get lightModeStream =>
+      getIt<TrafficLightRepository>().lightModeStream;
 
   Future<void> setTrafficLightMode(TrafficLightMode mode) async {
     await getIt<TrafficLightRepository>().setTrafficLightMode(mode);

@@ -1,10 +1,21 @@
+import 'dart:async';
+
 import 'package:ukrposhtatest/domain/entities/light_color.dart';
 import 'package:ukrposhtatest/domain/repositories/traffic_light_repository.dart';
 
 class MockTrafficLightRepository implements TrafficLightRepository {
   MockTrafficLightRepository();
 
-  TrafficLightMode _currMode = TrafficLightMode.regular;
+  static const _defaultTrafficLightMode = TrafficLightMode.regular;
+
+  TrafficLightMode _currMode = _defaultTrafficLightMode;
+
+  late final StreamController<TrafficLightMode> _modeController =
+      StreamController.broadcast(
+        onListen: () {
+          _modeController.add(_currMode);
+        },
+      );
 
   @override
   Future<Duration> getLightDuration(LightColor color) async {
@@ -20,13 +31,11 @@ class MockTrafficLightRepository implements TrafficLightRepository {
   }
 
   @override
-  Future<TrafficLightMode> getTrafficLightMode() async {
-    await Future.delayed(Duration(seconds: 1));
-    return _currMode;
+  Future<void> setTrafficLightMode(TrafficLightMode mode) async {
+    _currMode = mode;
+    _modeController.add(_currMode);
   }
 
   @override
-  Future<void> setTrafficLightMode(TrafficLightMode mode) async {
-    _currMode = mode;
-  }
+  Stream<TrafficLightMode> get lightModeStream => _modeController.stream;
 }

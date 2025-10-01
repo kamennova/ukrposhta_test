@@ -1,4 +1,3 @@
-import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 import 'package:ukrposhtatest/common.dart';
 import 'package:ukrposhtatest/domain/entities/light_color.dart';
@@ -7,20 +6,7 @@ import 'package:ukrposhtatest/domain/get_mode_use_case.dart';
 import 'package:ukrposhtatest/domain/repositories/traffic_light_repository.dart';
 import 'package:ukrposhtatest/presentation/cubit/traffic_light_cubit.dart';
 
-class MockTrafficLightRepository extends Mock
-    implements TrafficLightRepository {
-  @override
-  Future<Duration> getLightDuration(LightColor color) async {
-    return color == LightColor.yellow
-        ? Duration(seconds: 1)
-        : Duration(seconds: 3);
-  }
-
-  @override
-  Future<TrafficLightMode> getTrafficLightMode() async {
-    return TrafficLightMode.regular;
-  }
-}
+import 'mocks.dart';
 
 void main() {
   group(TrafficLightCubit, () {
@@ -28,7 +14,7 @@ void main() {
 
     setUpAll(() {
       getIt.registerSingleton<TrafficLightRepository>(
-        MockTrafficLightRepository(),
+        TestMockTrafficLightRepository(),
       );
       getIt.registerSingleton<GetLightDurationUseCase>(
         GetLightDurationUseCase(),

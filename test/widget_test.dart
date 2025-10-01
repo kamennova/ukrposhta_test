@@ -7,32 +7,18 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:ukrposhtatest/common.dart';
-import 'package:ukrposhtatest/domain/entities/light_color.dart';
 import 'package:ukrposhtatest/domain/get_light_duration_use_case.dart';
 import 'package:ukrposhtatest/domain/get_mode_use_case.dart';
 import 'package:ukrposhtatest/domain/repositories/traffic_light_repository.dart';
-
 import 'package:ukrposhtatest/main.dart';
 
-class MockTrafficLightRepository extends Mock
-    implements TrafficLightRepository {
-  @override
-  Future<Duration> getLightDuration(LightColor color) async {
-    return Duration(seconds: 3);
-  }
-
-  @override
-  Future<TrafficLightMode> getTrafficLightMode() async {
-    return TrafficLightMode.regular;
-  }
-}
+import 'mocks.dart';
 
 void main() {
   setUpAll(() {
     getIt.registerSingleton<TrafficLightRepository>(
-      MockTrafficLightRepository(),
+      TestMockTrafficLightRepository(),
     );
     getIt.registerSingleton<GetLightDurationUseCase>(GetLightDurationUseCase());
     getIt.registerSingleton<GetTrafficLightModeUseCase>(
@@ -59,7 +45,7 @@ void main() {
     decoration = yellowWidget.decoration as BoxDecoration;
     expect(decoration.color, equals(Colors.yellow));
 
-    await tester.pump(Duration(seconds: 3));
+    await tester.pump(Duration(seconds: 1));
 
     final green = find.byKey(Key("light-green"));
     expect(green, findsOneWidget);
@@ -74,7 +60,7 @@ void main() {
     decoration = yellowWidget.decoration as BoxDecoration;
     expect(decoration.color, equals(Colors.yellow));
 
-    await tester.pump(Duration(seconds: 3));
+    await tester.pump(Duration(seconds: 1));
 
     redWidget = tester.firstWidget(red) as Container;
     decoration = redWidget.decoration as BoxDecoration;

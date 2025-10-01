@@ -1,4 +1,3 @@
-import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 import 'package:ukrposhtatest/common.dart';
 import 'package:ukrposhtatest/domain/entities/light_color.dart';
@@ -7,35 +6,24 @@ import 'package:ukrposhtatest/domain/get_mode_use_case.dart';
 import 'package:ukrposhtatest/domain/repositories/traffic_light_repository.dart';
 import 'package:ukrposhtatest/presentation/cubit/traffic_light_cubit.dart';
 
-class MockTrafficLightRepository extends Mock
-    implements TrafficLightRepository {
-  @override
-  Future<Duration> getLightDuration(LightColor color) async {
-    switch (color) {
-      case LightColor.red:
-        return Duration(seconds: 10);
-      case LightColor.yellow:
-        return Duration(seconds: 5);
-      case LightColor.green:
-        return Duration(milliseconds: 500);
-    }
-  }
-
-  @override
-  Future<TrafficLightMode> getTrafficLightMode() async {
-    return TrafficLightMode.blinkingYellow;
-  }
-}
+import 'mocks.dart';
 
 void main() {
   group(TrafficLightCubit, () {
     late GetLightDurationUseCase durationUseCase;
     late GetTrafficLightModeUseCase modeUseCase;
-    late TrafficLightRepository repository;
 
     setUpAll(() {
-      repository = MockTrafficLightRepository();
-      getIt.registerSingleton<TrafficLightRepository>(repository);
+      getIt.registerSingleton<TrafficLightRepository>(
+        TestMockTrafficLightRepository(
+          mode: TrafficLightMode.blinkingYellow,
+          durations: {
+            LightColor.red: Duration(seconds: 10),
+            LightColor.yellow: Duration(seconds: 5),
+            LightColor.green: Duration(milliseconds: 500),
+          },
+        ),
+      );
       durationUseCase = GetLightDurationUseCase();
       modeUseCase = GetTrafficLightModeUseCase();
     });
@@ -56,10 +44,9 @@ void main() {
     });
 
     test("check light mode value is fetched from repo", () async {
-      expect(
-        await modeUseCase.getTrafficLightMode(),
-        equals(TrafficLightMode.blinkingYellow),
-      );
+      final initMode = await modeUseCase.lightModeStream.first;
+
+      expect(initMode, equals(TrafficLightMode.blinkingYellow));
     });
   });
 }

@@ -15,7 +15,8 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
   Map<LightColor, Duration> _lightsDurations = defaultLightsDurations;
 
   Timer? _nextColorTimer;
-  Timer? _modeRequester;
+  StreamSubscription<TrafficLightMode>? _modeSubscription;
+  TrafficLightMode _lastMode = TrafficLightMode.regular;
 
   static const int _defaultColorIndex = 0;
 
@@ -34,28 +35,31 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
     LightColor.yellow,
   ];
 
-  Duration get _currDuration =>
-      _lightsDurations[_colorsCycle[_currColorIndex]]!;
+  LightColor get _currColor => _colorsCycle[_currColorIndex];
 
   void start() {
     _scheduleNextColor();
     _fetchLightsDurations();
-    _fetchLightMode();
+    _subscribeToLightMode();
   }
 
   void resume() {
-    _runRegular();
+    if (_lastMode == TrafficLightMode.regular) {
+      _runRegular();
+    } else {
+      _runBlinkingYellow();
+    }
   }
 
   void _runRegular() {
     if (state is RegularTrafficLightState) return;
 
     if (!state.isOn) {
-      _fetchLightMode();
+      _onResumed();
     }
 
     _currColorIndex = _defaultColorIndex;
-    emit(TrafficLightState.regular(_colorsCycle[_currColorIndex]));
+    emit(TrafficLightState.regular(_currColor));
 
     /* not calling _nextColor() here, because it'd change curr color (red)
      immediately */
@@ -67,33 +71,35 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
 
     _cancelLightCycleTimer();
     emit(TrafficLightState.stopped());
-    _cancelModeMonitoring();
+    _modeSubscription?.pause();
   }
 
-  void runBlinkingYellow() {
+  void _runBlinkingYellow() {
     if (state is BlinkingYellowTrafficLightState) return;
 
     if (!state.isOn) {
-      _fetchLightMode();
+      _onResumed();
     }
 
     emit(TrafficLightState.blinkingYellow());
     _cancelLightCycleTimer();
   }
 
+  void _onResumed() {
+    _modeSubscription?.resume();
+  }
+
   void _nextColor() {
     if (state is! RegularTrafficLightState) return;
 
     _currColorIndex = (_currColorIndex + 1) % 4;
-    final nextColor = _colorsCycle[_currColorIndex];
-
-    emit(TrafficLightState.regular(nextColor));
+    emit(TrafficLightState.regular(_currColor));
 
     _scheduleNextColor();
   }
 
   void _scheduleNextColor() {
-    final delay = _currDuration;
+    final delay = _lightsDurations[_currColor]!;
     _nextColorTimer = Timer(delay, _nextColor);
   }
 
@@ -102,27 +108,21 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
     _nextColorTimer = null;
   }
 
-  Future<void> _fetchLightMode() async {
+  Future<void> _subscribeToLightMode() async {
     final useCase = getIt<GetTrafficLightModeUseCase>();
 
-    _modeRequester = Timer.periodic(Duration(seconds: 2), (_) async {
+    _modeSubscription = useCase.lightModeStream.listen((value) {
+      _lastMode = value;
       if (!state.isOn) return;
 
-      final mode = await useCase.getTrafficLightMode();
-
-      if (mode == TrafficLightMode.blinkingYellow &&
+      if (value == TrafficLightMode.blinkingYellow &&
           state is! BlinkingYellowTrafficLightState) {
-        runBlinkingYellow();
-      } else if (mode == TrafficLightMode.regular &&
+        _runBlinkingYellow();
+      } else if (value == TrafficLightMode.regular &&
           state is! RegularTrafficLightState) {
         _runRegular();
       }
     });
-  }
-
-  void _cancelModeMonitoring() {
-    _modeRequester?.cancel();
-    _modeRequester = null;
   }
 
   Future<void> _fetchLightsDurations() async {
@@ -143,7 +143,7 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
   @override
   Future<void> close() async {
     _cancelLightCycleTimer();
-    _cancelModeMonitoring();
+    _modeSubscription?.cancel();
 
     super.close();
   }

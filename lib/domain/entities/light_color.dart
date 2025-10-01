@@ -1,7 +1,6 @@
 enum TrafficLightMode {
   regular,
-  blinkingYellow,
-  stopped;
+  blinkingYellow;
 }
 
 enum LightColor {
