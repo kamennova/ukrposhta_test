@@ -21,7 +21,7 @@ class ModeSwitcher extends StatelessWidget {
   }
 
   void _setMode(TrafficLightMode mode, BuildContext context) {
-    getIt<GetTrafficLightModeUseCase>().setTrafficLightMode(mode);
+    getIt<GetLightModeUseCase>().setTrafficLightMode(mode);
 
     /*
     final cubit = context.read<TrafficLightCubit>();

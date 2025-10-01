@@ -21,8 +21,8 @@ void main() {
       TestMockTrafficLightRepository(),
     );
     getIt.registerSingleton<GetLightDurationUseCase>(GetLightDurationUseCase());
-    getIt.registerSingleton<GetTrafficLightModeUseCase>(
-      GetTrafficLightModeUseCase(),
+    getIt.registerSingleton<GetLightModeUseCase>(
+      GetLightModeUseCase(),
     );
   });
 

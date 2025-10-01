@@ -12,7 +12,7 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
   TrafficLightCubit() : super(TrafficLightState.regular(_defaultColor));
 
   int _currColorIndex = _defaultColorIndex;
-  Map<LightColor, Duration> _lightsDurations = defaultLightsDurations;
+  final Map<LightColor, Duration> _lightsDurations = {...defaultLightsDurations};
 
   Timer? _nextColorTimer;
   StreamSubscription<TrafficLightMode>? _modeSubscription;
@@ -109,7 +109,7 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
   }
 
   Future<void> _subscribeToLightMode() async {
-    final useCase = getIt<GetTrafficLightModeUseCase>();
+    final useCase = getIt<GetLightModeUseCase>();
 
     _modeSubscription = useCase.lightModeStream.listen((value) {
       _lastMode = value;
@@ -128,16 +128,12 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
   Future<void> _fetchLightsDurations() async {
     final useCase = getIt<GetLightDurationUseCase>();
 
-    final Map<LightColor, Duration> durations = {};
-
     await Future.wait(
       LightColor.values.map((color) async {
         final value = await useCase.getLightDuration(color);
-        durations.putIfAbsent(color, () => value);
+        _lightsDurations.putIfAbsent(color, () => value);
       }),
     );
-
-    _lightsDurations = durations;
   }
 
   @override

@@ -12,7 +12,7 @@ void main() {
     MockTrafficLightRepository(),
   );
   getIt.registerSingleton<GetLightDurationUseCase>(GetLightDurationUseCase());
-  getIt.registerSingleton<GetTrafficLightModeUseCase>(GetTrafficLightModeUseCase());
+  getIt.registerSingleton<GetLightModeUseCase>(GetLightModeUseCase());
 
   runApp(const MyApp());
 }

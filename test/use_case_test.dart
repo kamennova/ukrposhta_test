@@ -11,7 +11,7 @@ import 'mocks.dart';
 void main() {
   group(TrafficLightCubit, () {
     late GetLightDurationUseCase durationUseCase;
-    late GetTrafficLightModeUseCase modeUseCase;
+    late GetLightModeUseCase modeUseCase;
 
     setUpAll(() {
       getIt.registerSingleton<TrafficLightRepository>(
@@ -25,7 +25,7 @@ void main() {
         ),
       );
       durationUseCase = GetLightDurationUseCase();
-      modeUseCase = GetTrafficLightModeUseCase();
+      modeUseCase = GetLightModeUseCase();
     });
 
     test("check light duration values are fetched from repo", () async {
