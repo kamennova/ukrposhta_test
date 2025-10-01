@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$TrafficLightState {
 
- LightColor get currentColor; bool get isPaused; bool get isBlinking;
+ LightColor get currentColor; bool get isOn; bool get isBlinking; TrafficLightMode get mode;
 /// Create a copy of TrafficLightState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $TrafficLightStateCopyWith<TrafficLightState> get copyWith => _$TrafficLightStat
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TrafficLightState&&(identical(other.currentColor, currentColor) || other.currentColor == currentColor)&&(identical(other.isPaused, isPaused) || other.isPaused == isPaused)&&(identical(other.isBlinking, isBlinking) || other.isBlinking == isBlinking));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TrafficLightState&&(identical(other.currentColor, currentColor) || other.currentColor == currentColor)&&(identical(other.isOn, isOn) || other.isOn == isOn)&&(identical(other.isBlinking, isBlinking) || other.isBlinking == isBlinking)&&(identical(other.mode, mode) || other.mode == mode));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,currentColor,isPaused,isBlinking);
+int get hashCode => Object.hash(runtimeType,currentColor,isOn,isBlinking,mode);
 
 @override
 String toString() {
-  return 'TrafficLightState(currentColor: $currentColor, isPaused: $isPaused, isBlinking: $isBlinking)';
+  return 'TrafficLightState(currentColor: $currentColor, isOn: $isOn, isBlinking: $isBlinking, mode: $mode)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $TrafficLightStateCopyWith<$Res>  {
   factory $TrafficLightStateCopyWith(TrafficLightState value, $Res Function(TrafficLightState) _then) = _$TrafficLightStateCopyWithImpl;
 @useResult
 $Res call({
- LightColor currentColor, bool isPaused, bool isBlinking
+ LightColor currentColor, bool isOn, bool isBlinking, TrafficLightMode mode
 });
 
 
@@ -62,12 +62,13 @@ class _$TrafficLightStateCopyWithImpl<$Res>
 
 /// Create a copy of TrafficLightState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? currentColor = null,Object? isPaused = null,Object? isBlinking = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? currentColor = null,Object? isOn = null,Object? isBlinking = null,Object? mode = null,}) {
   return _then(_self.copyWith(
 currentColor: null == currentColor ? _self.currentColor : currentColor // ignore: cast_nullable_to_non_nullable
-as LightColor,isPaused: null == isPaused ? _self.isPaused : isPaused // ignore: cast_nullable_to_non_nullable
+as LightColor,isOn: null == isOn ? _self.isOn : isOn // ignore: cast_nullable_to_non_nullable
 as bool,isBlinking: null == isBlinking ? _self.isBlinking : isBlinking // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,mode: null == mode ? _self.mode : mode // ignore: cast_nullable_to_non_nullable
+as TrafficLightMode,
   ));
 }
 
@@ -152,10 +153,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( LightColor currentColor,  bool isPaused,  bool isBlinking)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( LightColor currentColor,  bool isOn,  bool isBlinking,  TrafficLightMode mode)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TrafficLightState() when $default != null:
-return $default(_that.currentColor,_that.isPaused,_that.isBlinking);case _:
+return $default(_that.currentColor,_that.isOn,_that.isBlinking,_that.mode);case _:
   return orElse();
 
 }
@@ -173,10 +174,10 @@ return $default(_that.currentColor,_that.isPaused,_that.isBlinking);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( LightColor currentColor,  bool isPaused,  bool isBlinking)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( LightColor currentColor,  bool isOn,  bool isBlinking,  TrafficLightMode mode)  $default,) {final _that = this;
 switch (_that) {
 case _TrafficLightState():
-return $default(_that.currentColor,_that.isPaused,_that.isBlinking);case _:
+return $default(_that.currentColor,_that.isOn,_that.isBlinking,_that.mode);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -193,10 +194,10 @@ return $default(_that.currentColor,_that.isPaused,_that.isBlinking);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( LightColor currentColor,  bool isPaused,  bool isBlinking)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( LightColor currentColor,  bool isOn,  bool isBlinking,  TrafficLightMode mode)?  $default,) {final _that = this;
 switch (_that) {
 case _TrafficLightState() when $default != null:
-return $default(_that.currentColor,_that.isPaused,_that.isBlinking);case _:
+return $default(_that.currentColor,_that.isOn,_that.isBlinking,_that.mode);case _:
   return null;
 
 }
@@ -208,12 +209,13 @@ return $default(_that.currentColor,_that.isPaused,_that.isBlinking);case _:
 
 
 class _TrafficLightState implements TrafficLightState {
-  const _TrafficLightState({this.currentColor = LightColor.red, this.isPaused = false, this.isBlinking = false});
+  const _TrafficLightState({this.currentColor = LightColor.red, this.isOn = false, this.isBlinking = false, this.mode = TrafficLightMode.regular});
   
 
 @override@JsonKey() final  LightColor currentColor;
-@override@JsonKey() final  bool isPaused;
+@override@JsonKey() final  bool isOn;
 @override@JsonKey() final  bool isBlinking;
+@override@JsonKey() final  TrafficLightMode mode;
 
 /// Create a copy of TrafficLightState
 /// with the given fields replaced by the non-null parameter values.
@@ -225,16 +227,16 @@ _$TrafficLightStateCopyWith<_TrafficLightState> get copyWith => __$TrafficLightS
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TrafficLightState&&(identical(other.currentColor, currentColor) || other.currentColor == currentColor)&&(identical(other.isPaused, isPaused) || other.isPaused == isPaused)&&(identical(other.isBlinking, isBlinking) || other.isBlinking == isBlinking));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TrafficLightState&&(identical(other.currentColor, currentColor) || other.currentColor == currentColor)&&(identical(other.isOn, isOn) || other.isOn == isOn)&&(identical(other.isBlinking, isBlinking) || other.isBlinking == isBlinking)&&(identical(other.mode, mode) || other.mode == mode));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,currentColor,isPaused,isBlinking);
+int get hashCode => Object.hash(runtimeType,currentColor,isOn,isBlinking,mode);
 
 @override
 String toString() {
-  return 'TrafficLightState(currentColor: $currentColor, isPaused: $isPaused, isBlinking: $isBlinking)';
+  return 'TrafficLightState(currentColor: $currentColor, isOn: $isOn, isBlinking: $isBlinking, mode: $mode)';
 }
 
 
@@ -245,7 +247,7 @@ abstract mixin class _$TrafficLightStateCopyWith<$Res> implements $TrafficLightS
   factory _$TrafficLightStateCopyWith(_TrafficLightState value, $Res Function(_TrafficLightState) _then) = __$TrafficLightStateCopyWithImpl;
 @override @useResult
 $Res call({
- LightColor currentColor, bool isPaused, bool isBlinking
+ LightColor currentColor, bool isOn, bool isBlinking, TrafficLightMode mode
 });
 
 
@@ -262,12 +264,13 @@ class __$TrafficLightStateCopyWithImpl<$Res>
 
 /// Create a copy of TrafficLightState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? currentColor = null,Object? isPaused = null,Object? isBlinking = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? currentColor = null,Object? isOn = null,Object? isBlinking = null,Object? mode = null,}) {
   return _then(_TrafficLightState(
 currentColor: null == currentColor ? _self.currentColor : currentColor // ignore: cast_nullable_to_non_nullable
-as LightColor,isPaused: null == isPaused ? _self.isPaused : isPaused // ignore: cast_nullable_to_non_nullable
+as LightColor,isOn: null == isOn ? _self.isOn : isOn // ignore: cast_nullable_to_non_nullable
 as bool,isBlinking: null == isBlinking ? _self.isBlinking : isBlinking // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,mode: null == mode ? _self.mode : mode // ignore: cast_nullable_to_non_nullable
+as TrafficLightMode,
   ));
 }
 

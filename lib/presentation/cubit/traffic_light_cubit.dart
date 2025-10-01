@@ -27,21 +27,34 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
   ];
 
   void start() async {
-    if (!state.isPaused) return;
+    if (state.isOn) return;
 
-    emit(state.copyWith(isPaused: false));
+    emit(state.copyWith(isOn: true));
 
     _nextColor();
   }
 
   void stop() async {
-    if (state.isPaused) return;
+    if (!state.isOn) return;
 
-    emit(state.copyWith(isPaused: true, isBlinking: false));
+    emit(state.copyWith(isOn: false, isBlinking: false));
   }
 
+  void setMode(TrafficLightMode mode) {
+    if (mode == state.mode) return;
+
+    emit(state.copyWith(mode: mode));
+
+    if (_shouldSwitchColor) {
+      _nextColor();
+    }
+  }
+
+  bool get _shouldSwitchColor =>
+      state.mode == TrafficLightMode.regular && state.isOn;
+
   void _nextColor() async {
-    if (state.isPaused) return;
+    if (!_shouldSwitchColor) return;
 
     _currColorIndex = (_currColorIndex + 1) % 4;
     final nextColor = _colorsCycle[_currColorIndex];

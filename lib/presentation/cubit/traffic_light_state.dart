@@ -7,8 +7,9 @@ part 'traffic_light_state.freezed.dart';
 abstract class TrafficLightState with _$TrafficLightState {
   const factory TrafficLightState({
     @Default(LightColor.red) LightColor currentColor,
-    @Default(false) bool isPaused,
+    @Default(false) bool isOn,
     @Default(false) bool isBlinking,
+    @Default(TrafficLightMode.regular) TrafficLightMode mode,
   }) = _TrafficLightState;
 
   factory TrafficLightState.initial() {
