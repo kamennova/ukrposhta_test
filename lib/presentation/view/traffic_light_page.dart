@@ -8,14 +8,9 @@ import 'package:ukrposhtatest/presentation/view/start_stop_button.dart';
 import 'light_widget.dart';
 import 'mode_switcher.dart';
 
-class TrafficLightPage extends StatefulWidget {
+class TrafficLightPage extends StatelessWidget {
   const TrafficLightPage({super.key});
 
-  @override
-  State<StatefulWidget> createState() => _TrafficLightState();
-}
-
-class _TrafficLightState extends State<TrafficLightPage> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
