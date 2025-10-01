@@ -11,12 +11,12 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
   TrafficLightCubit() : super(const TrafficLightState());
 
   int _currColorIndex = 0;
-  Map<LightColor, int> _lightsDurations = defaultLightsDurations;
+  Map<LightColor, Duration> _lightsDurations = defaultLightsDurations;
 
-  static const Map<LightColor, int> defaultLightsDurations = {
-    LightColor.yellow: 1,
-    LightColor.red: 3,
-    LightColor.green: 3,
+  static const Map<LightColor, Duration> defaultLightsDurations = {
+    LightColor.yellow: Duration(seconds: 1),
+    LightColor.red: Duration(seconds: 3),
+    LightColor.green: Duration(seconds: 3),
   };
 
   static const _colorsCycle = [
@@ -26,60 +26,65 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
     LightColor.yellow,
   ];
 
-  void start() async {
-    if (state.isOn) return;
+  bool get isStopped => state.mode == TrafficLightMode.stopped;
 
-    emit(state.copyWith(isOn: true));
 
-    _nextColor();
-  }
+  void runRegular() async {
+    if (state.mode == TrafficLightMode.regular) return;
 
-  void stop() async {
-    if (!state.isOn) return;
+    final needRestart = isStopped;
 
-    emit(state.copyWith(isOn: false, isBlinking: false));
-  }
+    emit(TrafficLightState.regular());
 
-  void setMode(TrafficLightMode mode) {
-    if (mode == state.mode) return;
-
-    emit(state.copyWith(mode: mode));
-
-    if (_shouldSwitchColor) {
+    if (needRestart) {
       _nextColor();
     }
   }
 
-  bool get _shouldSwitchColor =>
-      state.mode == TrafficLightMode.regular && state.isOn;
+  void stop() async {
+    if (state.mode == TrafficLightMode.stopped) return;
+    emit(TrafficLightState.stopped());
+  }
+
+  void runBlinkingYellow() {
+    if (state.mode == TrafficLightMode.blinkingYellow) return;
+
+    final needRestart = isStopped;
+
+    emit(TrafficLightState.blinkingYellow());
+
+    if (needRestart) {
+      _nextColor();
+    }
+  }
 
   void _nextColor() async {
-    if (!_shouldSwitchColor) return;
+    if (isStopped) return;
 
     _currColorIndex = (_currColorIndex + 1) % 4;
     final nextColor = _colorsCycle[_currColorIndex];
-    if (nextColor == LightColor.green) {
-      _scheduleBlinking(
-        Duration(seconds: _lightsDurations[LightColor.green]! - 1),
-      );
-    }
+    // if (nextColor == LightColor.green) {
+    //   _scheduleBlinking(
+    //     Duration(seconds: _lightsDurations[LightColor.green]! - 1),
+    //   );
+    // }
 
-    emit(state.copyWith(currentColor: nextColor, isBlinking: false));
+    emit(state.copyWith(currentColor: nextColor));
 
     Future.delayed(
-      Duration(seconds: _lightsDurations[nextColor]!),
+      _lightsDurations[nextColor]!,
     ).then((_) => _nextColor());
   }
 
   void _scheduleBlinking(Duration delay) async {
     await Future.delayed(delay);
-    emit(state.copyWith(isBlinking: true));
+    // emit(state.copyWith(isBlinking: true));
   }
 
   Future<void> fetchLightsDurations() async {
     final useCase = getIt<GetLightDurationUseCase>();
 
-    final Map<LightColor, int> durations = {};
+    final Map<LightColor, Duration> durations = {};
 
     await Future.wait(
       LightColor.values.map((color) async {

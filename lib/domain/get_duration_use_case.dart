@@ -6,7 +6,7 @@ import 'entities/light_color.dart';
 class GetLightDurationUseCase {
   const GetLightDurationUseCase();
 
-  Future<int> getLightDuration(LightColor color) async {
+  Future<Duration> getLightDuration(LightColor color) async {
     return await getIt<TrafficLightRepository>().getLightDuration(color);
   }
 }

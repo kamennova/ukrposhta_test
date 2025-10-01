@@ -5,12 +5,12 @@ class MockTrafficLightRepository implements TrafficLightRepository {
   const MockTrafficLightRepository();
 
   @override
-  Future<int> getLightDuration(LightColor color) async {
+  Future<Duration> getLightDuration(LightColor color) async {
     await Future.delayed(Duration(seconds: 1));
     switch (color) {
-      case LightColor.green: return 3;
-      case LightColor.yellow: return 1;
-      case LightColor.red: return 3;
+      case LightColor.green: return Duration(seconds: 3);
+      case LightColor.yellow: return Duration(seconds: 1);
+      case LightColor.red: return Duration(seconds: 3);
     }
   }
 }

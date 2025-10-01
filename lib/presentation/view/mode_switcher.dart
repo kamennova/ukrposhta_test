@@ -10,13 +10,20 @@ class ModeSwitcher extends StatelessWidget {
 
   Widget _getLabel(TrafficLightMode mode, String label, BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        final cubit = context.read<TrafficLightCubit>();
-        if (cubit.state.mode == mode) return;
-        cubit.setMode(mode);
-      },
+      onTap: () => _setMode(mode, context),
       child: Text(label, style: TextStyle(fontSize: 17)),
     );
+  }
+
+  void _setMode(TrafficLightMode mode, BuildContext context) {
+    final cubit = context.read<TrafficLightCubit>();
+    if (cubit.state.mode == mode) return;
+
+    if (mode == TrafficLightMode.regular) {
+      cubit.runRegular();
+    } else {
+      cubit.runBlinkingYellow();
+    }
   }
 
   @override
@@ -35,10 +42,11 @@ class ModeSwitcher extends StatelessWidget {
                 inactiveThumbColor: Colors.white,
                 value: state.mode == TrafficLightMode.blinkingYellow,
                 onChanged:
-                    (value) => context.read<TrafficLightCubit>().setMode(
+                    (value) => _setMode(
                       value
                           ? TrafficLightMode.blinkingYellow
                           : TrafficLightMode.regular,
+                      context
                     ),
               ),
             ),

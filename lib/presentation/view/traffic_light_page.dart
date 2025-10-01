@@ -24,7 +24,8 @@ class _TrafficLightState extends State<TrafficLightPage> {
     return BlocProvider(
       create: (_) {
         final cubit = TrafficLightCubit();
-        cubit.start();
+        cubit.fetchLightsDurations();
+        cubit.runRegular();
         return cubit;
       },
       child: _View(),
@@ -44,7 +45,7 @@ class _VState extends State<_View> with SingleTickerProviderStateMixin {
   void _toggleTrafficLight() {
     final cubit = context.read<TrafficLightCubit>();
     if (!cubit.state.isOn) {
-      cubit.start();
+      cubit.runRegular();
     } else {
       cubit.stop();
     }
@@ -67,13 +68,19 @@ class _VState extends State<_View> with SingleTickerProviderStateMixin {
   }
 
   @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocListener<TrafficLightCubit, TrafficLightState>(
       listener: (context, state) {
         log(state.toString());
 
         bool shouldBlink =
-            state.isBlinking || state.mode == TrafficLightMode.blinkingYellow;
+             state.mode == TrafficLightMode.blinkingYellow;
 
         if (state.isOn && shouldBlink) {
           if (!_animationController.isAnimating) {
@@ -143,7 +150,7 @@ class _VState extends State<_View> with SingleTickerProviderStateMixin {
                     ),
                   ),
                   SizedBox(height: 20),
-                  const ModeSwitcher(),
+                  state.isOn ? const ModeSwitcher() : const SizedBox.shrink(),
                   SizedBox(height: 10),
                   Row(
                     mainAxisSize: MainAxisSize.min,
