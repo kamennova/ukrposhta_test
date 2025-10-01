@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../domain/entities/light_color.dart';
-import '../cubit/traffic_light_cubit.dart';
-import '../cubit/traffic_light_state.dart';
+import '../../../domain/entities/light_color.dart';
+import '../../cubit/traffic_light_cubit.dart';
+import '../../cubit/traffic_light_state.dart';
 
 class ModeSwitcher extends StatelessWidget {
   const ModeSwitcher({super.key});

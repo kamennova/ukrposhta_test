@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../domain/entities/light_color.dart';
+import '../../../domain/entities/light_color.dart';
 
 class TrafficLightCircle extends StatelessWidget {
   final LightColor color;
@@ -24,6 +24,7 @@ class TrafficLightCircle extends StatelessWidget {
         child: FadeTransition(
           opacity: animation,
           child: Container(
+            key: Key("light-${color.name}"),
             width: 100,
             height: 100,
             decoration: BoxDecoration(

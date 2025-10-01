@@ -3,10 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ukrposhtatest/domain/entities/light_color.dart';
 import 'package:ukrposhtatest/presentation/cubit/traffic_light_cubit.dart';
 import 'package:ukrposhtatest/presentation/cubit/traffic_light_state.dart';
-import 'package:ukrposhtatest/presentation/view/start_stop_button.dart';
+import 'package:ukrposhtatest/presentation/view/widgets/start_stop_button.dart';
 
-import 'light_widget.dart';
-import 'mode_switcher.dart';
+import 'widgets/light_widget.dart';
+import 'widgets/mode_switcher.dart';
 
 class TrafficLightPage extends StatelessWidget {
   const TrafficLightPage({super.key});
@@ -84,7 +84,7 @@ class _VState extends State<_View> with SingleTickerProviderStateMixin {
         body: BlocBuilder<TrafficLightCubit, TrafficLightState>(
           builder: (context, state) {
             return Padding(
-              padding: EdgeInsets.all(10),
+              padding: EdgeInsets.all(6),
               child: Column(
                 children: [
                   Flexible(
@@ -109,6 +109,7 @@ class _VState extends State<_View> with SingleTickerProviderStateMixin {
                                   ]
                                   .map(
                                     (color) => TrafficLightCircle(
+                                      // key: Key("light_widget-${color.name}"),
                                       animation: _animation,
                                       color: color,
                                       isActive: state.currentColor == color,
@@ -119,9 +120,9 @@ class _VState extends State<_View> with SingleTickerProviderStateMixin {
                       ),
                     ),
                   ),
-                  SizedBox(height: 20),
+                  // SizedBox(height: 20),
                   const ModeSwitcher(),
-                  SizedBox(height: 20),
+                  SizedBox(height: 10),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
