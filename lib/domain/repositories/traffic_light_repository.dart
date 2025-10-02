@@ -1,9 +1,9 @@
-import 'package:ukrposhtatest/domain/entities/light_color.dart';
+import 'package:ukrposhtatest/domain/entities/traffic_light.dart';
 
 abstract interface class TrafficLightRepository {
+  Stream<TrafficLightMode> get lightModeStream;
+
   Future<Duration> getLightDuration(LightColor color);
 
   Future<void> setTrafficLightMode(TrafficLightMode mode);
-
-  Stream<TrafficLightMode> get lightModeStream;
 }

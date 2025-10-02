@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:ukrposhtatest/common.dart';
 import 'package:ukrposhtatest/data/repositories/mock_traffic_light_repository.dart';
 import 'package:ukrposhtatest/domain/get_light_duration_use_case.dart';
 import 'package:ukrposhtatest/domain/get_mode_use_case.dart';
 import 'package:ukrposhtatest/domain/repositories/traffic_light_repository.dart';
 import 'package:ukrposhtatest/presentation/view/traffic_light_page.dart';
 
-import 'common.dart';
-
 void main() {
-  getIt.registerSingleton<TrafficLightRepository>(
-    MockTrafficLightRepository(),
+  getIt.registerSingleton<TrafficLightRepository>(MockTrafficLightRepository());
+  getIt.registerSingleton<GetLightDurationUseCase>(
+    const GetLightDurationUseCase(),
   );
-  getIt.registerSingleton<GetLightDurationUseCase>(GetLightDurationUseCase());
-  getIt.registerSingleton<GetLightModeUseCase>(GetLightModeUseCase());
+  getIt.registerSingleton<GetLightModeUseCase>(const GetLightModeUseCase());
 
   runApp(const MyApp());
 }

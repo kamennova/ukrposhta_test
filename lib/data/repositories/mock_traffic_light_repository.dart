@@ -1,12 +1,16 @@
 import 'dart:async';
 
-import 'package:ukrposhtatest/domain/entities/light_color.dart';
+import 'package:ukrposhtatest/domain/entities/traffic_light.dart';
 import 'package:ukrposhtatest/domain/repositories/traffic_light_repository.dart';
 
 class MockTrafficLightRepository implements TrafficLightRepository {
-  MockTrafficLightRepository();
-
   static const _defaultTrafficLightMode = TrafficLightMode.regular;
+
+  static const Map<LightColor, Duration> lightsDurations = {
+    LightColor.red: Duration(seconds: 3),
+    LightColor.yellow: Duration(seconds: 1),
+    LightColor.green: Duration(seconds: 3),
+  };
 
   TrafficLightMode _currMode = _defaultTrafficLightMode;
 
@@ -18,25 +22,21 @@ class MockTrafficLightRepository implements TrafficLightRepository {
       );
 
   @override
+  Stream<TrafficLightMode> get lightModeStream => _modeController.stream;
+
+  MockTrafficLightRepository();
+
+  @override
   Future<Duration> getLightDuration(LightColor color) async {
-    await Future.delayed(Duration(seconds: 1));
-    switch (color) {
-      case LightColor.green:
-        return Duration(seconds: 3);
-      case LightColor.yellow:
-        return Duration(seconds: 1);
-      case LightColor.red:
-        return Duration(seconds: 3);
-    }
+    await Future.delayed(const Duration(seconds: 1));
+
+    return lightsDurations[color]!;
   }
 
   @override
   Future<void> setTrafficLightMode(TrafficLightMode mode) async {
-    await Future.delayed(Duration(seconds: 1));
+    await Future.delayed(const Duration(seconds: 1));
     _currMode = mode;
     _modeController.add(_currMode);
   }
-
-  @override
-  Stream<TrafficLightMode> get lightModeStream => _modeController.stream;
 }

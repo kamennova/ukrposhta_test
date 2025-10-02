@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../../../domain/entities/light_color.dart';
+import 'package:ukrposhtatest/domain/entities/traffic_light.dart';
 
 class TrafficLightCircle extends StatelessWidget {
   final LightColor color;
@@ -8,17 +7,20 @@ class TrafficLightCircle extends StatelessWidget {
   final Animation<double> animation;
 
   const TrafficLightCircle({
-    super.key,
     required this.animation,
     required this.isActive,
     required this.color,
+    super.key,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(2),
-      decoration: BoxDecoration(color: Colors.grey, shape: BoxShape.circle),
+      padding: const EdgeInsets.all(2),
+      decoration: const BoxDecoration(
+        color: Colors.grey,
+        shape: BoxShape.circle,
+      ),
       child: FadeTransition(
         opacity: animation,
         child: Container(

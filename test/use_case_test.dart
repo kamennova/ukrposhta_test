@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 import 'package:ukrposhtatest/common.dart';
-import 'package:ukrposhtatest/domain/entities/light_color.dart';
+import 'package:ukrposhtatest/domain/entities/traffic_light.dart';
 import 'package:ukrposhtatest/domain/get_light_duration_use_case.dart';
 import 'package:ukrposhtatest/domain/get_mode_use_case.dart';
 import 'package:ukrposhtatest/domain/repositories/traffic_light_repository.dart';

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-import '../../cubit/traffic_light_cubit.dart';
-import '../../cubit/traffic_light_state.dart';
+import 'package:ukrposhtatest/presentation/cubit/traffic_light_cubit.dart';
+import 'package:ukrposhtatest/presentation/cubit/traffic_light_state.dart';
 
 class StartStopButton extends StatelessWidget {
   const StartStopButton({super.key});
@@ -31,18 +30,18 @@ class StartStopButton extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  padding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+                  padding: const EdgeInsets.fromLTRB(10, 20, 10, 20),
                 ),
                 onPressed: () => _toggleTrafficLight(context),
                 child: Column(
                   children: [
                     state.isOn
-                        ? Icon(Icons.stop, size: 30)
-                        : Icon(Icons.play_arrow, size: 30),
-                    SizedBox(height: 5),
+                        ? const Icon(Icons.stop, size: 30)
+                        : const Icon(Icons.play_arrow, size: 30),
+                    const SizedBox(height: 5),
                     Text(
                       state.isOn ? "Stop" : "Start",
-                      style: TextStyle(fontSize: 20),
+                      style: const TextStyle(fontSize: 20),
                     ),
                   ],
                 ),

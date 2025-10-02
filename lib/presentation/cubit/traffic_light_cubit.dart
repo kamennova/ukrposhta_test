@@ -2,20 +2,15 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:ukrposhtatest/domain/entities/light_color.dart';
+import 'package:ukrposhtatest/common.dart';
+import 'package:ukrposhtatest/domain/entities/traffic_light.dart';
 import 'package:ukrposhtatest/domain/get_light_duration_use_case.dart';
 import 'package:ukrposhtatest/domain/get_mode_use_case.dart';
 import 'package:ukrposhtatest/presentation/cubit/traffic_light_state.dart';
 
-import '../../common.dart';
-
 class TrafficLightCubit extends Cubit<TrafficLightState> {
-  TrafficLightCubit() : super(TrafficLightState.regular(_defaultColor));
-
   int _currColorIndex = _defaultColorIndex;
-  final Map<LightColor, Duration> _lightsDurations = {
-    ...defaultLightsDurations,
-  };
+  Map<LightColor, Duration> _lightsDurations = _defaultLightsDurations;
   TrafficLightMode _currLightMode = TrafficLightMode.regular;
 
   Timer? _nextColorTimer;
@@ -24,9 +19,7 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
 
   static const int _defaultColorIndex = 0;
 
-  static LightColor get _defaultColor => _colorsCycle[_defaultColorIndex];
-
-  static const Map<LightColor, Duration> defaultLightsDurations = {
+  static const Map<LightColor, Duration> _defaultLightsDurations = {
     LightColor.red: Duration(seconds: 3),
     LightColor.yellow: Duration(seconds: 1),
     LightColor.green: Duration(seconds: 3),
@@ -41,6 +34,13 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
 
   LightColor get _currColor => _colorsCycle[_currColorIndex];
 
+  static LightColor get _defaultColor => _colorsCycle[_defaultColorIndex];
+
+  TrafficLightCubit() : super(TrafficLightState.regular(_defaultColor));
+
+  /// should be called on create, when ready to start traffic light
+  /// starts traffic light in regular mode, initializes monitoring of lights 
+  /// durations and current light mode (regular or blinking yellow) 
   void initialize() {
     _scheduleNextColor();
 
@@ -48,6 +48,7 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
     _subscribeToLightMode();
   }
 
+  /// runs traffic light depending on current mode
   void run() {
     if (!state.isOn) {
       _onResumed();
@@ -71,11 +72,12 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
     _scheduleNextColor();
   }
 
+  /// turns of traffic lights, pauses monitoring of lights durations and mode
   void stop() {
     if (state is StoppedTrafficLightState) return;
 
     _cancelLightCycleTimer();
-    emit(TrafficLightState.stopped());
+    emit(const TrafficLightState.stopped());
 
     _modeSubscription?.pause();
     _cancelLightDurationsUpdater();
@@ -84,7 +86,7 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
   void _startBlinkingYellow() {
     if (state is BlinkingYellowTrafficLightState) return;
 
-    emit(TrafficLightState.blinkingYellow());
+    emit(const TrafficLightState.blinkingYellow());
     _cancelLightCycleTimer();
   }
 
@@ -124,9 +126,10 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
   }
 
   void _startLightsDurationsUpdater() {
-    _lightDurationsFetcherTimer = Timer.periodic(Duration(minutes: 2), (_) {
-      _fetchLightsDurations();
-    });
+    _lightDurationsFetcherTimer = Timer.periodic(
+      const Duration(minutes: 2),
+      (_) => _fetchLightsDurations(),
+    );
   }
 
   void _cancelLightDurationsUpdater() {
@@ -137,26 +140,28 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
   Future<void> _fetchLightsDurations() async {
     final useCase = getIt<GetLightDurationUseCase>();
 
-    await Future.wait(
-      LightColor.values.map((color) async {
-        try {
-          final value = await useCase
-              .getLightDuration(color)
-              .timeout(Duration(seconds: 30));
-          _lightsDurations.putIfAbsent(color, () => value);
-        } catch (e) {
-          log("fetch light duration timeout, ${e}");
-        }
-      }),
-    );
+    try {
+      final Map<LightColor, Duration> durationsUpd = {};
+
+      await Future.wait(
+        LightColor.values.map((color) async {
+          final value = await useCase.getLightDuration(color);
+          durationsUpd.putIfAbsent(color, () => value);
+        }),
+      ).timeout(const Duration(seconds: 30));
+
+      _lightsDurations = durationsUpd;
+    } catch (e) {
+      log("fetch light duration timeout, $e");
+    }
   }
 
   @override
   Future<void> close() async {
     _cancelLightCycleTimer();
-    _modeSubscription?.cancel();
+    await _modeSubscription?.cancel();
     _cancelLightDurationsUpdater();
 
-    super.close();
+    await super.close();
   }
 }

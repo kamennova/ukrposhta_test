@@ -1,11 +1,9 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ukrposhtatest/domain/entities/traffic_light.dart';
+import 'package:ukrposhtatest/presentation/cubit/traffic_light_cubit.dart';
+import 'package:ukrposhtatest/presentation/cubit/traffic_light_state.dart';
 import 'package:ukrposhtatest/presentation/view/widgets/single_light_widget.dart';
-
-import '../../../domain/entities/light_color.dart';
-import '../../cubit/traffic_light_cubit.dart';
-import '../../cubit/traffic_light_state.dart';
 
 class TrafficLightWidget extends StatefulWidget {
   const TrafficLightWidget({super.key});
@@ -32,15 +30,9 @@ class _State extends State<TrafficLightWidget>
   }
 
   @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return BlocListener<TrafficLightCubit, TrafficLightState>(
-      listener: (context, state) {
+      listener: (_, state) {
         if (state.isBlinking) {
           if (!_animationController.isAnimating) {
             _animationController.repeat(reverse: true);
@@ -53,9 +45,9 @@ class _State extends State<TrafficLightWidget>
         }
       },
       child: BlocBuilder<TrafficLightCubit, TrafficLightState>(
-        builder: (context, state) {
+        builder: (_, state) {
           return Container(
-            padding: EdgeInsets.symmetric(horizontal: 15, vertical: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
             decoration: BoxDecoration(
               color: Colors.black,
               borderRadius: BorderRadius.circular(15),
@@ -78,5 +70,11 @@ class _State extends State<TrafficLightWidget>
         },
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 }

@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ukrposhtatest/common.dart';
+import 'package:ukrposhtatest/domain/entities/traffic_light.dart';
 import 'package:ukrposhtatest/domain/get_mode_use_case.dart';
-
-import '../../../common.dart';
-import '../../../domain/entities/light_color.dart';
-import '../../cubit/traffic_light_cubit.dart';
-import '../../cubit/traffic_light_state.dart';
+import 'package:ukrposhtatest/presentation/cubit/traffic_light_cubit.dart';
+import 'package:ukrposhtatest/presentation/cubit/traffic_light_state.dart';
 
 class ModeSwitcher extends StatefulWidget {
   const ModeSwitcher({super.key});
@@ -17,17 +16,7 @@ class ModeSwitcher extends StatefulWidget {
 class _State extends State<ModeSwitcher> {
   bool _isLoading = false;
 
-  Widget _getLabel(TrafficLightMode mode, String label) {
-    return GestureDetector(
-      onTap: () => _setMode(mode),
-      child: Padding(
-        padding: EdgeInsets.all(10),
-        child: Text(label, style: TextStyle(fontSize: 17)),
-      ),
-    );
-  }
-
-  void _setMode(TrafficLightMode mode) async {
+  Future<void> _setMode(TrafficLightMode mode) async {
     setState(() {
       _isLoading = true;
     });
@@ -40,7 +29,7 @@ class _State extends State<ModeSwitcher> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<TrafficLightCubit, TrafficLightState>(
-      builder: (context, state) {
+      builder: (_, state) {
         final bool isEnabled = state.isOn;
 
         final modeSwitch = Switch(
@@ -58,7 +47,7 @@ class _State extends State<ModeSwitcher> {
                   : null,
         );
 
-        final loadingIndicator = SizedBox(
+        const loadingIndicator = SizedBox(
           width: 30,
           height: 30,
           child: CircularProgressIndicator(
@@ -72,7 +61,10 @@ class _State extends State<ModeSwitcher> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _getLabel(TrafficLightMode.regular, "Regular"),
+              _Label(
+                label: "Regular",
+                onTap: () => _setMode(TrafficLightMode.regular),
+              ),
               SizedBox(
                 width: 60,
                 height: 35,
@@ -80,11 +72,33 @@ class _State extends State<ModeSwitcher> {
                   child: _isLoading ? loadingIndicator : modeSwitch,
                 ),
               ),
-              _getLabel(TrafficLightMode.blinkingYellow, "Blinking yellow"),
+              _Label(
+                label: "Blinking yellow",
+                onTap: () => _setMode(TrafficLightMode.blinkingYellow),
+              ),
             ],
           ),
         );
       },
+    );
+  }
+}
+
+class _Label extends StatelessWidget {
+  final Function() onTap;
+  final String label;
+
+  const _Label({required this.onTap, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(5),
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Text(label, style: const TextStyle(fontSize: 17)),
+      ),
     );
   }
 }

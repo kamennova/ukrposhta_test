@@ -1,13 +1,12 @@
+import 'package:ukrposhtatest/common.dart';
+import 'package:ukrposhtatest/domain/entities/traffic_light.dart';
 import 'package:ukrposhtatest/domain/repositories/traffic_light_repository.dart';
 
-import '../common.dart';
-import 'entities/light_color.dart';
-
 class GetLightModeUseCase {
-  const GetLightModeUseCase();
-
   Stream<TrafficLightMode> get lightModeStream =>
       getIt<TrafficLightRepository>().lightModeStream;
+
+  const GetLightModeUseCase();
 
   Future<void> setTrafficLightMode(TrafficLightMode mode) async {
     await getIt<TrafficLightRepository>().setTrafficLightMode(mode);

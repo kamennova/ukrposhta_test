@@ -1,7 +1,8 @@
 import 'dart:async';
 
 import 'package:mocktail/mocktail.dart';
-import 'package:ukrposhtatest/domain/entities/light_color.dart';
+import 'package:ukrposhtatest/data/repositories/mock_traffic_light_repository.dart';
+import 'package:ukrposhtatest/domain/entities/traffic_light.dart';
 import 'package:ukrposhtatest/domain/repositories/traffic_light_repository.dart';
 
 class TestMockTrafficLightRepository extends Mock
@@ -18,11 +19,8 @@ class TestMockTrafficLightRepository extends Mock
 
   TestMockTrafficLightRepository({
     TrafficLightMode mode = TrafficLightMode.regular,
-    Map<LightColor, Duration> durations = const {
-      LightColor.red: Duration(seconds: 3),
-      LightColor.yellow: Duration(seconds: 1),
-      LightColor.green: Duration(seconds: 3),
-    },
+    Map<LightColor, Duration> durations =
+        MockTrafficLightRepository.lightsDurations,
   }) : _mode = mode,
        _durations = durations;
 
