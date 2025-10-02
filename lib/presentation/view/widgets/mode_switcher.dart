@@ -7,32 +7,34 @@ import '../../../domain/entities/light_color.dart';
 import '../../cubit/traffic_light_cubit.dart';
 import '../../cubit/traffic_light_state.dart';
 
-class ModeSwitcher extends StatelessWidget {
+class ModeSwitcher extends StatefulWidget {
   const ModeSwitcher({super.key});
 
-  Widget _getLabel(TrafficLightMode mode, String label, BuildContext context) {
+  @override
+  State<StatefulWidget> createState() => _State();
+}
+
+class _State extends State<ModeSwitcher> {
+  bool _isLoading = false;
+
+  Widget _getLabel(TrafficLightMode mode, String label) {
     return GestureDetector(
-      onTap: () => _setMode(mode, context),
+      onTap: () => _setMode(mode),
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+        padding: EdgeInsets.all(10),
         child: Text(label, style: TextStyle(fontSize: 17)),
       ),
     );
   }
 
-  void _setMode(TrafficLightMode mode, BuildContext context) {
-    getIt<GetLightModeUseCase>().setTrafficLightMode(mode);
-
-    /*
-    final cubit = context.read<TrafficLightCubit>();
-
-    if (!cubit.state.isOn) return;
-
-    if (mode == TrafficLightMode.regular) {
-      cubit.runRegular();
-    } else {
-      cubit.runBlinkingYellow();
-    } */
+  void _setMode(TrafficLightMode mode) async {
+    setState(() {
+      _isLoading = true;
+    });
+    await getIt<GetLightModeUseCase>().setTrafficLightMode(mode);
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   @override
@@ -41,32 +43,44 @@ class ModeSwitcher extends StatelessWidget {
       builder: (context, state) {
         final bool isEnabled = state.isOn;
 
+        final modeSwitch = Switch(
+          trackColor: WidgetStatePropertyAll(Colors.grey.shade600),
+          activeColor: Colors.yellow,
+          inactiveThumbColor: Colors.white,
+          value: state is BlinkingYellowTrafficLightState,
+          onChanged:
+              isEnabled
+                  ? (value) => _setMode(
+                    value
+                        ? TrafficLightMode.blinkingYellow
+                        : TrafficLightMode.regular,
+                  )
+                  : null,
+        );
+
+        final loadingIndicator = SizedBox(
+          width: 30,
+          height: 30,
+          child: CircularProgressIndicator(
+            padding: EdgeInsets.zero,
+            strokeAlign: 1,
+          ),
+        );
+
         return Opacity(
           opacity: isEnabled ? 1 : 0.5,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _getLabel(TrafficLightMode.regular, "Regular", context),
-              Switch(
-                trackColor: WidgetStatePropertyAll(Colors.grey.shade600),
-                activeColor: Colors.yellow,
-                inactiveThumbColor: Colors.white,
-                value: state is BlinkingYellowTrafficLightState,
-                onChanged:
-                    isEnabled
-                        ? (value) => _setMode(
-                          value
-                              ? TrafficLightMode.blinkingYellow
-                              : TrafficLightMode.regular,
-                          context,
-                        )
-                        : null,
+              _getLabel(TrafficLightMode.regular, "Regular"),
+              SizedBox(
+                width: 60,
+                height: 35,
+                child: Center(
+                  child: _isLoading ? loadingIndicator : modeSwitch,
+                ),
               ),
-              _getLabel(
-                TrafficLightMode.blinkingYellow,
-                "Blinking yellow",
-                context,
-              ),
+              _getLabel(TrafficLightMode.blinkingYellow, "Blinking yellow"),
             ],
           ),
         );

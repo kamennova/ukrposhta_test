@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ukrposhtatest/domain/entities/light_color.dart';
@@ -12,11 +13,14 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
   TrafficLightCubit() : super(TrafficLightState.regular(_defaultColor));
 
   int _currColorIndex = _defaultColorIndex;
-  final Map<LightColor, Duration> _lightsDurations = {...defaultLightsDurations};
+  final Map<LightColor, Duration> _lightsDurations = {
+    ...defaultLightsDurations,
+  };
+  TrafficLightMode _currLightMode = TrafficLightMode.regular;
 
   Timer? _nextColorTimer;
+  Timer? _lightDurationsFetcherTimer;
   StreamSubscription<TrafficLightMode>? _modeSubscription;
-  TrafficLightMode _lastMode = TrafficLightMode.regular;
 
   static const int _defaultColorIndex = 0;
 
@@ -37,26 +41,27 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
 
   LightColor get _currColor => _colorsCycle[_currColorIndex];
 
-  void start() {
+  void initialize() {
     _scheduleNextColor();
-    _fetchLightsDurations();
+
+    _startLightsDurationsUpdater();
     _subscribeToLightMode();
   }
 
-  void resume() {
-    if (_lastMode == TrafficLightMode.regular) {
-      _runRegular();
-    } else {
-      _runBlinkingYellow();
-    }
-  }
-
-  void _runRegular() {
-    if (state is RegularTrafficLightState) return;
-
+  void run() {
     if (!state.isOn) {
       _onResumed();
     }
+
+    if (_currLightMode == TrafficLightMode.regular) {
+      _startRegular();
+    } else {
+      _startBlinkingYellow();
+    }
+  }
+
+  void _startRegular() {
+    if (state is RegularTrafficLightState) return;
 
     _currColorIndex = _defaultColorIndex;
     emit(TrafficLightState.regular(_currColor));
@@ -71,15 +76,13 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
 
     _cancelLightCycleTimer();
     emit(TrafficLightState.stopped());
+
     _modeSubscription?.pause();
+    _cancelLightDurationsUpdater();
   }
 
-  void _runBlinkingYellow() {
+  void _startBlinkingYellow() {
     if (state is BlinkingYellowTrafficLightState) return;
-
-    if (!state.isOn) {
-      _onResumed();
-    }
 
     emit(TrafficLightState.blinkingYellow());
     _cancelLightCycleTimer();
@@ -87,6 +90,7 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
 
   void _onResumed() {
     _modeSubscription?.resume();
+    _startLightsDurationsUpdater();
   }
 
   void _nextColor() {
@@ -112,17 +116,22 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
     final useCase = getIt<GetLightModeUseCase>();
 
     _modeSubscription = useCase.lightModeStream.listen((value) {
-      _lastMode = value;
-      if (!state.isOn) return;
-
-      if (value == TrafficLightMode.blinkingYellow &&
-          state is! BlinkingYellowTrafficLightState) {
-        _runBlinkingYellow();
-      } else if (value == TrafficLightMode.regular &&
-          state is! RegularTrafficLightState) {
-        _runRegular();
+      _currLightMode = value;
+      if (state.isOn) {
+        run();
       }
     });
+  }
+
+  void _startLightsDurationsUpdater() {
+    _lightDurationsFetcherTimer = Timer.periodic(Duration(minutes: 2), (_) {
+      _fetchLightsDurations();
+    });
+  }
+
+  void _cancelLightDurationsUpdater() {
+    _lightDurationsFetcherTimer?.cancel();
+    _lightDurationsFetcherTimer = null;
   }
 
   Future<void> _fetchLightsDurations() async {
@@ -130,8 +139,14 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
 
     await Future.wait(
       LightColor.values.map((color) async {
-        final value = await useCase.getLightDuration(color);
-        _lightsDurations.putIfAbsent(color, () => value);
+        try {
+          final value = await useCase
+              .getLightDuration(color)
+              .timeout(Duration(seconds: 30));
+          _lightsDurations.putIfAbsent(color, () => value);
+        } catch (e) {
+          log("fetch light duration timeout, ${e}");
+        }
       }),
     );
   }
@@ -140,6 +155,7 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
   Future<void> close() async {
     _cancelLightCycleTimer();
     _modeSubscription?.cancel();
+    _cancelLightDurationsUpdater();
 
     super.close();
   }

@@ -27,7 +27,7 @@ void main() {
 
     setUp(() {
       trafficLightCubit = TrafficLightCubit();
-      trafficLightCubit.start();
+      trafficLightCubit.initialize();
     });
 
     tearDown(() {
@@ -45,7 +45,7 @@ void main() {
       expect(trafficLightCubit.state.currentColor, equals(null));
       expect(trafficLightCubit.state, isA<StoppedTrafficLightState>());
 
-      trafficLightCubit.resume();
+      trafficLightCubit.run();
       expect(trafficLightCubit.state.currentColor, isNot(null));
     });
 

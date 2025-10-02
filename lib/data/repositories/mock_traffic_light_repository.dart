@@ -32,6 +32,7 @@ class MockTrafficLightRepository implements TrafficLightRepository {
 
   @override
   Future<void> setTrafficLightMode(TrafficLightMode mode) async {
+    await Future.delayed(Duration(seconds: 1));
     _currMode = mode;
     _modeController.add(_currMode);
   }

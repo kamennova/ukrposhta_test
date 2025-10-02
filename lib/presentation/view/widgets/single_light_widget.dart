@@ -17,20 +17,17 @@ class TrafficLightCircle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 104,
-      height: 104,
+      padding: EdgeInsets.all(2),
       decoration: BoxDecoration(color: Colors.grey, shape: BoxShape.circle),
-      child: Center(
-        child: FadeTransition(
-          opacity: animation,
-          child: Container(
-            key: Key("light-${color.name}"),
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              color: isActive ? _colors[color] : null,
-              shape: BoxShape.circle,
-            ),
+      child: FadeTransition(
+        opacity: animation,
+        child: Container(
+          key: Key("light-${color.name}"),
+          width: 100,
+          height: 100,
+          decoration: BoxDecoration(
+            color: isActive ? lightWidgetColors[color] : null,
+            shape: BoxShape.circle,
           ),
         ),
       ),
@@ -38,7 +35,7 @@ class TrafficLightCircle extends StatelessWidget {
   }
 }
 
-const Map<LightColor, Color> _colors = {
+const Map<LightColor, Color> lightWidgetColors = {
   LightColor.red: Colors.red,
   LightColor.yellow: Colors.yellow,
   LightColor.green: Colors.green,
