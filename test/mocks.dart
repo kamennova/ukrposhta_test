@@ -20,7 +20,7 @@ class TestMockTrafficLightRepository extends Mock
   TestMockTrafficLightRepository({
     TrafficLightMode mode = TrafficLightMode.regular,
     Map<LightColor, Duration> durations =
-        MockTrafficLightRepository.lightsDurations,
+        MockTrafficLightRepository.defaultLightsDurations,
   }) : _mode = mode,
        _durations = durations;
 

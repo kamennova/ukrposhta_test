@@ -2,7 +2,7 @@ import 'package:test/test.dart';
 import 'package:ukrposhtatest/common.dart';
 import 'package:ukrposhtatest/domain/entities/traffic_light.dart';
 import 'package:ukrposhtatest/domain/get_light_duration_use_case.dart';
-import 'package:ukrposhtatest/domain/get_mode_use_case.dart';
+import 'package:ukrposhtatest/domain/light_mode_use_case.dart';
 import 'package:ukrposhtatest/domain/repositories/traffic_light_repository.dart';
 import 'package:ukrposhtatest/presentation/cubit/traffic_light_cubit.dart';
 import 'package:ukrposhtatest/presentation/cubit/traffic_light_state.dart';
@@ -20,8 +20,8 @@ void main() {
       getIt.registerSingleton<GetLightDurationUseCase>(
         GetLightDurationUseCase(),
       );
-      getIt.registerSingleton<GetLightModeUseCase>(
-        GetLightModeUseCase(),
+      getIt.registerSingleton<LightModeUseCase>(
+        LightModeUseCase(),
       );
     });
 
@@ -48,19 +48,6 @@ void main() {
       trafficLightCubit.run();
       expect(trafficLightCubit.state.currentColor, isNot(null));
     });
-
-    /* test("blinking yellow works", () async {
-      expect(trafficLightCubit.state.currentColor, equals(LightColor.red));
-
-      getIt<TrafficLightRepository>().setTrafficLightMode(TrafficLightMode.blinkingYellow);
-
-      await Future.delayed(Duration(seconds: 1));
-
-      expect(trafficLightCubit.state.currentColor, equals(LightColor.yellow));
-      expect(trafficLightCubit.state, isA<BlinkingYellowTrafficLightState>());
-
-      getIt<TrafficLightRepository>().setTrafficLightMode(TrafficLightMode.regular);
-    }); */
 
     test("colors change", () async {
       expect(trafficLightCubit.state.currentColor, equals(LightColor.red));

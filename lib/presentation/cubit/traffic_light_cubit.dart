@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ukrposhtatest/common.dart';
 import 'package:ukrposhtatest/domain/entities/traffic_light.dart';
 import 'package:ukrposhtatest/domain/get_light_duration_use_case.dart';
-import 'package:ukrposhtatest/domain/get_mode_use_case.dart';
+import 'package:ukrposhtatest/domain/light_mode_use_case.dart';
 import 'package:ukrposhtatest/presentation/cubit/traffic_light_state.dart';
 
 class TrafficLightCubit extends Cubit<TrafficLightState> {
@@ -34,17 +34,16 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
 
   LightColor get _currColor => _colorsCycle[_currColorIndex];
 
-  static LightColor get _defaultColor => _colorsCycle[_defaultColorIndex];
+  TrafficLightCubit() :
+        super(TrafficLightState.regular(_colorsCycle[_defaultColorIndex]));
 
-  TrafficLightCubit() : super(TrafficLightState.regular(_defaultColor));
-
-  /// should be called on create, when ready to start traffic light
+  /// should be called on cubit create, when ready to start traffic light.
   /// starts traffic light in regular mode, initializes monitoring of lights 
   /// durations and current light mode (regular or blinking yellow) 
   void initialize() {
     _scheduleNextColor();
 
-    _startLightsDurationsUpdater();
+    _startLightsDurationsFetcher();
     _subscribeToLightMode();
   }
 
@@ -92,7 +91,7 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
 
   void _onResumed() {
     _modeSubscription?.resume();
-    _startLightsDurationsUpdater();
+    _startLightsDurationsFetcher();
   }
 
   void _nextColor() {
@@ -115,7 +114,7 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
   }
 
   Future<void> _subscribeToLightMode() async {
-    final useCase = getIt<GetLightModeUseCase>();
+    final useCase = getIt<LightModeUseCase>();
 
     _modeSubscription = useCase.lightModeStream.listen((value) {
       _currLightMode = value;
@@ -125,7 +124,10 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
     });
   }
 
-  void _startLightsDurationsUpdater() {
+  void _startLightsDurationsFetcher() {
+    if (_lightDurationsFetcherTimer != null) {
+      log("sdf");
+    }
     _lightDurationsFetcherTimer = Timer.periodic(
       const Duration(minutes: 2),
       (_) => _fetchLightsDurations(),
@@ -159,9 +161,9 @@ class TrafficLightCubit extends Cubit<TrafficLightState> {
   @override
   Future<void> close() async {
     _cancelLightCycleTimer();
-    await _modeSubscription?.cancel();
     _cancelLightDurationsUpdater();
+    _modeSubscription?.cancel();
 
-    await super.close();
+    super.close();
   }
 }

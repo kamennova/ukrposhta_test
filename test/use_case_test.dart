@@ -2,7 +2,7 @@ import 'package:test/test.dart';
 import 'package:ukrposhtatest/common.dart';
 import 'package:ukrposhtatest/domain/entities/traffic_light.dart';
 import 'package:ukrposhtatest/domain/get_light_duration_use_case.dart';
-import 'package:ukrposhtatest/domain/get_mode_use_case.dart';
+import 'package:ukrposhtatest/domain/light_mode_use_case.dart';
 import 'package:ukrposhtatest/domain/repositories/traffic_light_repository.dart';
 import 'package:ukrposhtatest/presentation/cubit/traffic_light_cubit.dart';
 
@@ -11,7 +11,7 @@ import 'mocks.dart';
 void main() {
   group(TrafficLightCubit, () {
     late GetLightDurationUseCase durationUseCase;
-    late GetLightModeUseCase modeUseCase;
+    late LightModeUseCase modeUseCase;
 
     setUpAll(() {
       getIt.registerSingleton<TrafficLightRepository>(
@@ -25,7 +25,7 @@ void main() {
         ),
       );
       durationUseCase = GetLightDurationUseCase();
-      modeUseCase = GetLightModeUseCase();
+      modeUseCase = LightModeUseCase();
     });
 
     test("check light duration values are fetched from repo", () async {

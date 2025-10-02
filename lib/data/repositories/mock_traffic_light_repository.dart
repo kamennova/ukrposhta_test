@@ -3,10 +3,12 @@ import 'dart:async';
 import 'package:ukrposhtatest/domain/entities/traffic_light.dart';
 import 'package:ukrposhtatest/domain/repositories/traffic_light_repository.dart';
 
+/// this exposes light mode change events stream and
+/// methods for getting specific light color duration and setting light mode
 class MockTrafficLightRepository implements TrafficLightRepository {
   static const _defaultTrafficLightMode = TrafficLightMode.regular;
 
-  static const Map<LightColor, Duration> lightsDurations = {
+  static const Map<LightColor, Duration> defaultLightsDurations = {
     LightColor.red: Duration(seconds: 3),
     LightColor.yellow: Duration(seconds: 1),
     LightColor.green: Duration(seconds: 3),
@@ -30,7 +32,7 @@ class MockTrafficLightRepository implements TrafficLightRepository {
   Future<Duration> getLightDuration(LightColor color) async {
     await Future.delayed(const Duration(seconds: 1));
 
-    return lightsDurations[color]!;
+    return defaultLightsDurations[color]!;
   }
 
   @override

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ukrposhtatest/common.dart';
 import 'package:ukrposhtatest/data/repositories/mock_traffic_light_repository.dart';
 import 'package:ukrposhtatest/domain/get_light_duration_use_case.dart';
-import 'package:ukrposhtatest/domain/get_mode_use_case.dart';
+import 'package:ukrposhtatest/domain/light_mode_use_case.dart';
 import 'package:ukrposhtatest/domain/repositories/traffic_light_repository.dart';
 import 'package:ukrposhtatest/presentation/view/traffic_light_page.dart';
 
@@ -11,7 +11,7 @@ void main() {
   getIt.registerSingleton<GetLightDurationUseCase>(
     const GetLightDurationUseCase(),
   );
-  getIt.registerSingleton<GetLightModeUseCase>(const GetLightModeUseCase());
+  getIt.registerSingleton<LightModeUseCase>(const LightModeUseCase());
 
   runApp(const MyApp());
 }

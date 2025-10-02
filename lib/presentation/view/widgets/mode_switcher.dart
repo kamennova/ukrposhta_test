@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ukrposhtatest/common.dart';
 import 'package:ukrposhtatest/domain/entities/traffic_light.dart';
-import 'package:ukrposhtatest/domain/get_mode_use_case.dart';
+import 'package:ukrposhtatest/domain/light_mode_use_case.dart';
 import 'package:ukrposhtatest/presentation/cubit/traffic_light_cubit.dart';
 import 'package:ukrposhtatest/presentation/cubit/traffic_light_state.dart';
 
@@ -17,10 +17,12 @@ class _State extends State<ModeSwitcher> {
   bool _isLoading = false;
 
   Future<void> _setMode(TrafficLightMode mode) async {
+    if (_isLoading) return;
+
     setState(() {
       _isLoading = true;
     });
-    await getIt<GetLightModeUseCase>().setTrafficLightMode(mode);
+    await getIt<LightModeUseCase>().setTrafficLightMode(mode);
     setState(() {
       _isLoading = false;
     });
@@ -63,7 +65,10 @@ class _State extends State<ModeSwitcher> {
             children: [
               _Label(
                 label: "Regular",
-                onTap: () => _setMode(TrafficLightMode.regular),
+                onTap:
+                    _isLoading
+                        ? null
+                        : () => _setMode(TrafficLightMode.regular),
               ),
               SizedBox(
                 width: 60,
@@ -74,7 +79,10 @@ class _State extends State<ModeSwitcher> {
               ),
               _Label(
                 label: "Blinking yellow",
-                onTap: () => _setMode(TrafficLightMode.blinkingYellow),
+                onTap:
+                    _isLoading
+                        ? null
+                        : () => _setMode(TrafficLightMode.blinkingYellow),
               ),
             ],
           ),
@@ -85,7 +93,7 @@ class _State extends State<ModeSwitcher> {
 }
 
 class _Label extends StatelessWidget {
-  final Function() onTap;
+  final Function()? onTap;
   final String label;
 
   const _Label({required this.onTap, required this.label});
